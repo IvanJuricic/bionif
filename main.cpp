@@ -46,11 +46,11 @@ void fasta_parser(std::vector<Fasta> * sequences, std::string filename)
 
 int main(void) {
 
-    std::string genomeFilePath = "Escherichia_coli_gca_000798515.Escherichia_coli_CVM_N33561PS_v._1.0.dna.nonchromosomal.fa";
+    std::string genomeFilePath = "data";
     std::string line, name, content;
 
     std::cout << "Hello there" << std::endl;
-    /*
+    
     std::ifstream genome;
     genome.open(genomeFilePath);
 
@@ -86,14 +86,15 @@ int main(void) {
     } else {
         std::cout << "Unable to open requested file" << std::endl;
     }
-    */
+    
    // Parse fasta file
-    std::vector<Fasta> sequences;
+    /*std::vector<Fasta> sequences;
     fasta_parser(&sequences, genomeFilePath);
 
     for (Fasta s : sequences)
     {
         s.print_sequence();
-    }
+    }*/
+
     return 0;
 }
