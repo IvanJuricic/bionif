@@ -22,21 +22,25 @@ unsigned int create_fingerprint(unsigned char *s);
 unsigned int hash1(unsigned int x);
 HashTableItem* create_hash_item(unsigned int key, unsigned int value);
 HashTable* create_hash_table(int size);
-void insert_sequence_hash_to_table(HashTable* table, char* sequence);
+void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence);
 void print_table(HashTable* table);
 void free_item(HashTableItem* item);
 void free_table(HashTable* table);
-
+void* search_for_item(HashTable* table, char* sequence);
+void delete_item(HashTable* table, char* sequence);
 
 int main() {
 
     FILE *fp;
     int entries = 0, seqHash, idx;
-    char buff[BUFF_LEN], *sequence, *tmp;
+    char buff[BUFF_LEN], *sequence, *tmp, *test;
     bool firstEntry = true;
 
-    HashTable *hashTable;
-    hashTable = create_hash_table(200);
+    char *entry = "TGAGCCGACGTCGCGGCCTCTCCGGCTGACGTGCTGGCTGCGCGTGCTGAGTCCGCAGCATCAGTCGCACAGGTTGCCGCCTCACGGGCAGATGTGCCGGCATCGCCGGCTGACTTCTTCGCGGCAGCCGTGTTCTGTGCCACCACGGACGCGTTACGCGCCACCTCTTCCACCATCAGTTCAAAACGACGCAGTGCCTCCGGACGGGC";
+
+    HashTable *hashTable1, *hashTable2;
+    hashTable1 = create_hash_table(200);
+    hashTable2 = create_hash_table(200);
 
     fp = fopen("data", "r");
 
@@ -47,7 +51,8 @@ int main() {
         }
         else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
             // Add sequence to cuckoo filter
-            insert_sequence_hash_to_table(hashTable, sequence);
+            //entry = sequence;
+            insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
             //seqHash = create_fingerprint(sequence);
             //idx = hash1(seqHash);
             //printf("Sekvenca %d => len: %ld, hash: %u\n", entries, strlen(sequence), seqHash);
@@ -65,7 +70,9 @@ int main() {
         }
     }
 
-    print_table(hashTable);
+    //print_table(hashTable);
+    printf("Checking for entries....\n");
+    search_for_item(hashTable1, entry);
 
     printf("Done!\n");
     
@@ -97,42 +104,80 @@ HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
     return item;
 }
 
+// Search for item in hash table
 void* search_for_item(HashTable* table, char* sequence) {
     int seqHash = create_fingerprint(sequence);
-    int idx = hash1(seqHash);
+    int idx = hash1(seqHash) % 400;
 
-    HashTableItem* item = table->items[idx];
+    HashTableItem* item = table -> items[idx];
  
     // Ensure that we move to a non NULL item
     if (item != NULL) {
-        if (item->value == seqHash)
+        printf("Item value => %u, sequence value => %u\n", item->value, seqHash);
+        /*if (item->value == seqHash) {
             printf("Sequence found!\n");
+        }*/
     }
+    
     printf("Sequence NOT found!\n");
 }
 
-// Add item to table
-void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
-    // Create the item
+// Delete item in hash table
+void delete_item(HashTable* table, char* sequence) {
+    // Deletes an item from the table
     int seqHash = create_fingerprint(sequence);
-    int idx = hash1(seqHash) % 200;
-    
-    HashTableItem* item = create_hash_item(idx, seqHash);
-    HashTableItem* current_item = table->items[idx];
+    int idx = hash1(seqHash) % 400;
 
-    if (current_item == NULL) {
-        // Key does not exist.
-        if (table -> count == table -> size) {
-            // Hash Table Full
-            printf("Insert Error: Hash Table is full\n");
+    HashTableItem* item = table -> items[idx];
+    
+    if (item == NULL) {
+        // Does not exist. Return
+        return;
+    }
+    else {
+        if (item -> key == idx) {
+            // No collision chain. Remove the item
+            // and set table index to NULL
+            table -> items[idx] = NULL;
             free_item(item);
+            table->count--;
             return;
         }
-        
-        // Insert directly
-        table->items[idx] = item; 
-        table->count++;
     }
+}
+
+// Add item to table
+void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence) {
+    int seqHash = create_fingerprint(sequence);
+    int idx1 = hash1(seqHash) % 200;
+    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
+
+    if (table1 -> items[idx1] == NULL) {
+        // Key does not exist.
+        if (table1 -> count == table1 -> size) {
+            // Hash Table Full
+            printf("Insert Error: Hash Table is full\n");
+            //free_item(item);
+            return;
+        }
+        printf("Dodajem u PRVU tablicu\n");
+        HashTableItem* item = create_hash_item(idx1, seqHash);
+        // Insert directly
+        table1 -> items[idx1] = item; 
+        table1 -> count++;
+    } else if(table2 -> items[idx2] == NULL){
+        if(table2 -> count == table2 -> size) {
+            // Hash Table Full
+            printf("Insert Error: Hash Table is full\n");
+            //free_item(item);
+            return;
+        }
+        printf("Dodajem u DRUGU tablicu\n");
+        HashTableItem* item = create_hash_item(idx2, seqHash);
+        // Insert directly
+        table2 -> items[idx2] = item; 
+        table2 -> count++;
+    } 
 }
 
 // Free hash table item
@@ -173,7 +218,7 @@ unsigned int create_fingerprint(unsigned char *s) {
     return hash;
 }
 
-// Hash table function
+// Hash table 1 function
 unsigned int hash1(unsigned int x) {
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
