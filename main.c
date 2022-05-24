@@ -26,7 +26,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 void print_table(HashTable* table);
 void free_item(HashTableItem* item);
 void free_table(HashTable* table);
-void* search_for_item(HashTable* table1, HashTable* table2, char* sequence);
+void search_for_item(HashTable* table1, HashTable* table2, char* sequence);
 void delete_item(HashTable* table1, HashTable* table2, char* sequence);
 
 int main() {
@@ -36,7 +36,7 @@ int main() {
     char buff[BUFF_LEN], *sequence, *tmp, *test;
     bool firstEntry = true;
 
-    char *entry = "TGAGCCGACGTCGCGGCCTCTCCGGCTGACGTGCTGGCTGCGCGTGCTGAGTCCGCAGCATCAGTCGCACAGGTTGCCGCCTCACGGGCAGATGTGCCGGCATCGCCGGCTGACTTCTTCGCGGCAGCCGTGTTCTGTGCCACCACGGACGCGTTACGCGCCACCTCTTCCACCATCAGTTCAAAACGACGCAGTGCCTCCGGACGGGC";
+    char *sequences[5];
 
     HashTable *hashTable1, *hashTable2;
     hashTable1 = create_hash_table(200);
@@ -51,7 +51,10 @@ int main() {
         }
         else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
             // Add sequence to cuckoo filter
-            entry = sequence;
+            if(entries < 5) {
+                sequences[entries] = malloc(strlen(sequence) + 1);
+                strcpy(sequences[entries], sequence);
+            }
             insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
             //seqHash = create_fingerprint(sequence);
             //idx = hash1(seqHash);
@@ -70,11 +73,20 @@ int main() {
         }
     }
 
+    for(int i = 0; i < 5; i++) {
+        //printf("\n%s\n", sequences[i]);
+        search_for_item(hashTable1, hashTable2, sequences[i]);
+    }
+    delete_item(hashTable1, hashTable2, sequences[2]);
+    for(int i = 0; i < 5; i++) {
+        //printf("\n%s\n", sequences[i]);
+        search_for_item(hashTable1, hashTable2, sequences[i]);
+    }
     //print_table(hashTable);
-    printf("Checking for entries....\n");
-    search_for_item(hashTable1, hashTable2, entry);
-    delete_item(hashTable1, hashTable2, entry);
-    search_for_item(hashTable1, hashTable2, entry);
+    //printf("Checking for entries....\n");
+    //search_for_item(hashTable1, hashTable2, entry);
+    //delete_item(hashTable1, hashTable2, entry);
+    //search_for_item(hashTable1, hashTable2, entry);
 
     printf("Done!\n");
     
@@ -107,21 +119,25 @@ HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
 }
 
 // Search for item in hash table
-void* search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
+void search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
     int seqHash = create_fingerprint(sequence);
     int idx1 = hash1(seqHash) % 200;
     int idx2 = (idx1 ^ hash1(seqHash)) % 200;
 
-    if(table1 -> items[idx1] -> value == seqHash){
-        printf("Sequence found!\n");
-        return;
-    } else if(table2 -> items[idx2] -> value == seqHash) {
-        printf("Sequence found!\n");
-        return;
-    } else {
-        printf("Sequence NOT found!\n");
-        return;
+    // Check if element exists in first table
+    if(table1 -> items[idx1] != NULL) {
+        if(table1 -> items[idx1] -> value == seqHash){
+            printf("Sequence found!\n");
+            return;
+        }
+    } else if(table2 -> items[idx2] != NULL) {
+        if(table2 -> items[idx2] -> value == seqHash) {
+            printf("Sequence found!\n");
+            return;
+        }
     }
+    printf("Sequence NOT found!\n");
+    return;
 }
 
 // Delete item in hash table
