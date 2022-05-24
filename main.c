@@ -29,11 +29,18 @@ void free_item(HashTableItem* item);
 void free_table(HashTable* table);
 void search_for_item(HashTable* table1, HashTable* table2, char* sequence);
 void delete_item(HashTable* table1, HashTable* table2, char* sequence);
-int check_dna_file();
+int check_dna_file(char *filename);
 int get_user_input();
 
-int main() {
+int main(int argc, char *argv[]) {
 
+    if(argc != 2) {
+        printf("\n\tUsage: ./a.out filename\n");
+        exit(-1);
+    }
+
+    char *filename = argv[argc-1];
+    
     FILE *fp;
     int counter = 0, seqHash, idx, num_entries, k;
     char buff[BUFF_LEN], *sequence, *tmp, *test;
@@ -45,11 +52,11 @@ int main() {
     hashTable1 = create_hash_table(200);
     hashTable2 = create_hash_table(200);
 
-    num_entries = check_dna_file();
-    fp = fopen("data3", "r");
-    printf("Tu smoooo %d\n", num_entries);
-
+    num_entries = check_dna_file(filename);
+    fp = fopen(filename, "r");
+    
     if(num_entries > 1) {
+        printf("\t%d entries found!\n", num_entries);
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
@@ -63,7 +70,7 @@ int main() {
                 }
                 // Add sequence to cuckoo filter
                 insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
-                printf("Sequence %d => len: %ld\n", counter, strlen(sequence));
+                printf("Added sequence num: %d, seq len: %ld\n", counter, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
                 counter++;
@@ -79,9 +86,8 @@ int main() {
         }
     } else if (num_entries == 1) {
         // Determine how large the user wants the k-mer
-        printf("Tu smo\n");
+        printf("\tLong sequence detected\n");
         k = get_user_input();
-        printf("Size of window: %d\n", k);
         /*
         while(fgets(buff, k, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
@@ -183,12 +189,12 @@ int get_user_input() {
 }
 
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
-int check_dna_file() {
+int check_dna_file(char *filename) {
     int num_sequences = 0;
     char buff[BUFF_LEN];
 
     FILE *fp;
-    fp = fopen("data3", "r");
+    fp = fopen(filename, "r");
     
     while(fgets(buff, BUFF_LEN, fp) != NULL) {
         if(buff[0] == '>') num_sequences++;
