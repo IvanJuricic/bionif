@@ -178,7 +178,6 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
             //free_item(item);
             return;
         }
-        printf("Dodajem u PRVU tablicu\n");
         HashTableItem* item = create_hash_item(idx1, seqHash);
         // Insert directly
         table1 -> items[idx1] = item; 
@@ -190,7 +189,6 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
             //free_item(item);
             return;
         }
-        printf("Dodajem u DRUGU tablicu\n");
         HashTableItem* item = create_hash_item(idx2, seqHash);
         // Insert directly
         table2 -> items[idx2] = item; 
