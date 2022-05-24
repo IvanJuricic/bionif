@@ -7,7 +7,8 @@
 
 // Structs
 typedef struct {
-    char *key, *value;
+    unsigned int key;
+    char *value;
 } HashTableItem;
 
 typedef struct {
@@ -18,7 +19,9 @@ typedef struct {
 
 // Function declarations
 char* append_string(char *s1, char *s2);
-unsigned int hash_func(unsigned char *s);
+unsigned int create_fingerprint(unsigned char *s);
+
+HashTableItem add_hash_item(unsigned int key, char *value);
 
 int main() {
 
@@ -57,8 +60,33 @@ int main() {
 
 }
 
+// Create hash table and init everything to NULL
+HashTable* create_hash_table(int size) {
+    HashTable* table = (HashTable*) malloc(sizeof(HashTable));
+    
+    table -> size = size;
+    table -> count = 0;
+    table -> items = (HashTableItem**) calloc(table->size, sizeof(HashTableItem*));
+    
+    for (int i=0; i< table->size; i++)
+        table -> items[i] = NULL;
+ 
+    return table;
+}
+
+// Create hash item from hashed sequence 
+HashTableItem* create_hash_item(unsigned int key, char *value) {
+    HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
+    
+    item -> key = key;
+    item -> value = (char *) malloc(strlen(value) + 1);
+    strcpy(item -> value, value);
+
+    return item;
+}
+
 // Sequence fingerprint creation
-unsigned int hash_func(unsigned char *s) {
+unsigned int create_fingerprint(unsigned char *s) {
     unsigned int hash = 5381, c;
 
     while (c = *s++)
