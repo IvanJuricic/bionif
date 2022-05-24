@@ -6,11 +6,12 @@
 #define BUFF_LEN 255
 
 char* append_string(char *s1, char *s2);
+unsigned int hash_func(unsigned char *s);
 
 int main() {
 
     FILE *fp;
-    int prevSize = 0, entries = 0;
+    int entries = 0, seqHash;
     char buff[BUFF_LEN], *sequence, *tmp;
     bool firstEntry = true;
 
@@ -23,7 +24,8 @@ int main() {
         }
         else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
             // Add sequence to cuckoo filter
-            printf("Sekvenca %d => len: %ld\n", entries, strlen(sequence));
+            seqHash = hash_func(sequence);
+            printf("Sekvenca %d => len: %ld, hash: %u\n", entries, strlen(sequence), seqHash);
             sequence = NULL;
             entries++;
             continue;
@@ -41,6 +43,16 @@ int main() {
     
     return 0;
 
+}
+
+// Sequence fingerprint creation
+unsigned int hash_func(unsigned char *s) {
+    unsigned int hash = 5381, c;
+
+    while (c = *s++)
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+    return hash;
 }
 
 // Append DNA sequences if longer than buffer limit
