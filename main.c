@@ -112,17 +112,16 @@ void* search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
     int idx1 = hash1(seqHash) % 200;
     int idx2 = (idx1 ^ hash1(seqHash)) % 200;
 
-    HashTableItem* item = table -> items[idx];
- 
-    // Ensure that we move to a non NULL item
-    if (item != NULL) {
-        printf("Item value => %u, sequence value => %u\n", item->value, seqHash);
-        /*if (item->value == seqHash) {
-            printf("Sequence found!\n");
-        }*/
+    if(table1 -> items[idx1] -> value == seqHash){
+        printf("Sequence found!\n");
+        return;
+    } else if(table2 -> items[idx2] -> value == seqHash) {
+        printf("Sequence found!\n");
+        return;
+    } else {
+        printf("Sequence NOT found!\n");
+        return;
     }
-    
-    printf("Sequence NOT found!\n");
 }
 
 // Delete item in hash table
