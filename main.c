@@ -5,6 +5,18 @@
 
 #define BUFF_LEN 255
 
+// Structs
+typedef struct {
+    char *key, *value;
+} HashTableItem;
+
+typedef struct {
+    HashTableItem **items;
+    int size;
+    int count;
+} HashTable;
+
+// Function declarations
 char* append_string(char *s1, char *s2);
 unsigned int hash_func(unsigned char *s);
 
