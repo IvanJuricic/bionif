@@ -58,8 +58,9 @@ int main() {
             insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
             //seqHash = create_fingerprint(sequence);
             //idx = hash1(seqHash);
-            //printf("Sekvenca %d => len: %ld, hash: %u\n", entries, strlen(sequence), seqHash);
+            printf("Sekvenca %d => len: %ld\n", entries, strlen(sequence));
             //printf("Sekvenca %d => hash: %d\n", entries, idx);
+            free(sequence);
             sequence = NULL;
             entries++;
             continue;
@@ -78,6 +79,7 @@ int main() {
         search_for_item(hashTable1, hashTable2, sequences[i]);
     }
     delete_item(hashTable1, hashTable2, sequences[2]);
+    delete_item(hashTable1, hashTable2, sequences[4]);
     for(int i = 0; i < 5; i++) {
         //printf("\n%s\n", sequences[i]);
         search_for_item(hashTable1, hashTable2, sequences[i]);
@@ -87,6 +89,13 @@ int main() {
     //search_for_item(hashTable1, hashTable2, entry);
     //delete_item(hashTable1, hashTable2, entry);
     //search_for_item(hashTable1, hashTable2, entry);
+    if(fp != NULL) fclose(fp);
+    for(int i = 0; i < 5; i++) {
+        if(sequences[i] != NULL) {
+            free(sequences[i]);
+            sequences[i] = NULL;
+        }
+    }
 
     printf("Done!\n");
     
