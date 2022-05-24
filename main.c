@@ -26,8 +26,8 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 void print_table(HashTable* table);
 void free_item(HashTableItem* item);
 void free_table(HashTable* table);
-void* search_for_item(HashTable* table, char* sequence);
-void delete_item(HashTable* table, char* sequence);
+void* search_for_item(HashTable* table1, HashTable* table2, char* sequence);
+void delete_item(HashTable* table1, HashTable* table2, char* sequence);
 
 int main() {
 
@@ -51,7 +51,7 @@ int main() {
         }
         else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
             // Add sequence to cuckoo filter
-            //entry = sequence;
+            entry = sequence;
             insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
             //seqHash = create_fingerprint(sequence);
             //idx = hash1(seqHash);
@@ -72,7 +72,9 @@ int main() {
 
     //print_table(hashTable);
     printf("Checking for entries....\n");
-    search_for_item(hashTable1, entry);
+    search_for_item(hashTable1, hashTable2, entry);
+    delete_item(hashTable1, hashTable2, entry);
+    search_for_item(hashTable1, hashTable2, entry);
 
     printf("Done!\n");
     
@@ -105,9 +107,10 @@ HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
 }
 
 // Search for item in hash table
-void* search_for_item(HashTable* table, char* sequence) {
+void* search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
     int seqHash = create_fingerprint(sequence);
-    int idx = hash1(seqHash) % 400;
+    int idx1 = hash1(seqHash) % 200;
+    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
 
     HashTableItem* item = table -> items[idx];
  
@@ -123,26 +126,26 @@ void* search_for_item(HashTable* table, char* sequence) {
 }
 
 // Delete item in hash table
-void delete_item(HashTable* table, char* sequence) {
-    // Deletes an item from the table
+void delete_item(HashTable* table1, HashTable* table2, char* sequence) {
     int seqHash = create_fingerprint(sequence);
-    int idx = hash1(seqHash) % 400;
+    int idx1 = hash1(seqHash) % 200;
+    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
 
-    HashTableItem* item = table -> items[idx];
-    
-    if (item == NULL) {
-        // Does not exist. Return
+    if(table1 -> items[idx1] -> value == seqHash){
+        table1 -> items[idx1] = NULL;
+        free(table1 -> items[idx1]);
+        table1 -> count--;
+        printf("Deleted item from hash table 1 at index %d\n", idx1);
         return;
-    }
-    else {
-        if (item -> key == idx) {
-            // No collision chain. Remove the item
-            // and set table index to NULL
-            table -> items[idx] = NULL;
-            free_item(item);
-            table->count--;
-            return;
-        }
+    } else if(table2 -> items[idx2] -> value == seqHash) {
+        table2 -> items[idx2] = NULL;
+        free(table2 -> items[idx2]);
+        table2 -> count--;
+        printf("Deleted item from hash table 1 at index %d\n", idx2);
+        return;
+    } else {
+        printf("No such entry stored!\n");
+        return;
     }
 }
 
