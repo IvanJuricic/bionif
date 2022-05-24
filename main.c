@@ -23,7 +23,7 @@ unsigned int hash1(unsigned int x);
 HashTableItem* create_hash_item(unsigned int key, unsigned int value);
 HashTable* create_hash_table(int size);
 void insert_sequence_hash_to_table(HashTable* table, char* sequence);
-
+void print_table(HashTable* table);
 void free_item(HashTableItem* item);
 void free_table(HashTable* table);
 
@@ -51,7 +51,7 @@ int main() {
             //seqHash = create_fingerprint(sequence);
             //idx = hash1(seqHash);
             //printf("Sekvenca %d => len: %ld, hash: %u\n", entries, strlen(sequence), seqHash);
-            printf("Sekvenca %d => hash: %d\n", entries, idx);
+            //printf("Sekvenca %d => hash: %d\n", entries, idx);
             sequence = NULL;
             entries++;
             continue;
@@ -64,6 +64,8 @@ int main() {
             sequence = tmp;
         }
     }
+
+    print_table(hashTable);
 
     printf("Done!\n");
     
@@ -90,7 +92,7 @@ HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
     HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
     
     item -> key = key;
-    item -> value = value;
+    item -> value = value; 
     
     return item;
 }
@@ -113,11 +115,11 @@ void* search_for_item(HashTable* table, char* sequence) {
 void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
     // Create the item
     int seqHash = create_fingerprint(sequence);
-    int idx = hash1(seqHash);
-
-    HashTableItem* item = create_item(idx, seqHash);
-    HashTableItem* current_item = table->items[idx];
+    int idx = hash1(seqHash) % 200;
     
+    HashTableItem* item = create_hash_item(idx, seqHash);
+    HashTableItem* current_item = table->items[idx];
+
     if (current_item == NULL) {
         // Key does not exist.
         if (table -> count == table -> size) {
@@ -148,6 +150,17 @@ void free_table(HashTable* table) {
  
     free(table->items);
     free(table);
+}
+
+// Print table
+void print_table(HashTable* table) {
+    printf("\nHash Table\n-------------------\n");
+    for (int i=0; i<table->size; i++) {
+        if (table->items[i]) {
+            printf("Index:%d, Key:%u, Value:%u\n", i, table->items[i]->key, table->items[i]->value);
+        }
+    }
+    printf("-------------------\n\n");
 }
 
 // Sequence fingerprint creation
