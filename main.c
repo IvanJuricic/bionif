@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define BUFF_LEN 255
 
@@ -28,11 +29,13 @@ void free_item(HashTableItem* item);
 void free_table(HashTable* table);
 void search_for_item(HashTable* table1, HashTable* table2, char* sequence);
 void delete_item(HashTable* table1, HashTable* table2, char* sequence);
+int check_dna_file();
+int get_user_input();
 
 int main() {
 
     FILE *fp;
-    int entries = 0, seqHash, idx;
+    int counter = 0, seqHash, idx, num_entries, k;
     char buff[BUFF_LEN], *sequence, *tmp, *test;
     bool firstEntry = true;
 
@@ -42,36 +45,71 @@ int main() {
     hashTable1 = create_hash_table(200);
     hashTable2 = create_hash_table(200);
 
-    fp = fopen("data", "r");
+    num_entries = check_dna_file();
+    fp = fopen("data3", "r");
+    printf("Tu smoooo %d\n", num_entries);
 
-    while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
-        if(buff[0] == '>' && firstEntry == true) {
-            firstEntry = false;
-            continue;
-        }
-        else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
-            // Add sequence to cuckoo filter
-            if(entries < 5) {
-                sequences[entries] = malloc(strlen(sequence) + 1);
-                strcpy(sequences[entries], sequence);
+    if(num_entries > 1) {
+        while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
+            if(buff[0] == '>' && firstEntry == true) {
+                firstEntry = false;
+                continue;
             }
-            insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
-            //seqHash = create_fingerprint(sequence);
-            //idx = hash1(seqHash);
-            printf("Sekvenca %d => len: %ld\n", entries, strlen(sequence));
-            //printf("Sekvenca %d => hash: %d\n", entries, idx);
-            free(sequence);
-            sequence = NULL;
-            entries++;
-            continue;
-        }else if(sequence == NULL) {
-            sequence = (char *)malloc(strlen(buff));
-            strcpy(sequence, buff);
-            continue;
-        } else {
-            tmp = append_string(sequence, buff);
-            sequence = tmp;
+            else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
+                // Remember first 5 sequences for searching
+                if(counter < 5) {
+                    sequences[counter] = malloc(strlen(sequence) + 1);
+                    strcpy(sequences[counter], sequence);
+                }
+                // Add sequence to cuckoo filter
+                insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
+                printf("Sequence %d => len: %ld\n", counter, strlen(sequence));
+                free(sequence);
+                sequence = NULL;
+                counter++;
+                continue;
+            }else if(sequence == NULL) {
+                sequence = (char *)malloc(strlen(buff));
+                strcpy(sequence, buff);
+                continue;
+            } else {
+                tmp = append_string(sequence, buff);
+                sequence = tmp;
+            }
         }
+    } else if (num_entries == 1) {
+        // Determine how large the user wants the k-mer
+        printf("Tu smo\n");
+        k = get_user_input();
+        printf("Size of window: %d\n", k);
+        /*
+        while(fgets(buff, k, (FILE *)fp) != NULL) {
+            if(buff[0] == '>' && firstEntry == true) {
+                firstEntry = false;
+                continue;
+            }
+            else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
+                // Remember first 5 sequences for searching
+                if(counter < 5) {
+                    sequences[counter] = malloc(strlen(sequence) + 1);
+                    strcpy(sequences[counter], sequence);
+                }
+                // Add sequence to cuckoo filter
+                insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
+                printf("Sequence %d => len: %ld\n", counter, strlen(sequence));
+                free(sequence);
+                sequence = NULL;
+                counter++;
+                continue;
+            }else if(sequence == NULL) {
+                sequence = (char *)malloc(strlen(buff));
+                strcpy(sequence, buff);
+                continue;
+            } else {
+                tmp = append_string(sequence, buff);
+                sequence = tmp;
+            }
+        }*/
     }
 
     for(int i = 0; i < 5; i++) {
@@ -103,6 +141,64 @@ int main() {
 
 }
 
+int get_user_input() {
+    int tmp;
+    
+    printf("Choose the length of k-mer\n");
+    printf("\tPress 1 for k = 10\n");
+    printf("\tPress 2 for k = 20\n");
+    printf("\tPress 3 for k = 50\n");
+    printf("\tPress 4 for k = 100\n");
+    printf("\tPress 5 for k = 1000\n");
+
+    tmp = getchar();
+
+    switch (tmp)
+    {
+    case '1':
+        return 10;
+        break;
+
+    case '2':
+        return 20;
+        break;
+
+    case '3':
+        return 50;
+        break;
+
+    case '4':
+        return 100;
+        break;
+
+    case '5':
+        return 1000;
+        break;
+    
+    default:
+        printf("Wrong input!\nExiting!\n");
+        exit(-1);
+    }
+
+}
+
+// Check if there is one long sequence (returns 1) or multiple (returns num of entries)
+int check_dna_file() {
+    int num_sequences = 0;
+    char buff[BUFF_LEN];
+
+    FILE *fp;
+    fp = fopen("data3", "r");
+    
+    while(fgets(buff, BUFF_LEN, fp) != NULL) {
+        if(buff[0] == '>') num_sequences++;
+    }
+
+    printf("Check done!\n");
+
+    return num_sequences;
+}
+
 // Create hash table and init everything to NULL
 HashTable* create_hash_table(int size) {
     HashTable* table = (HashTable*) malloc(sizeof(HashTable));
@@ -129,6 +225,10 @@ HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
 
 // Search for item in hash table
 void search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
+    if(sequence == NULL) {
+        printf("Sequence invalid!\n");
+        return;
+    }
     int seqHash = create_fingerprint(sequence);
     int idx1 = hash1(seqHash) % 200;
     int idx2 = (idx1 ^ hash1(seqHash)) % 200;
@@ -151,6 +251,10 @@ void search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
 
 // Delete item in hash table
 void delete_item(HashTable* table1, HashTable* table2, char* sequence) {
+    if(sequence == NULL) {
+        printf("Sequence invalid!\n");
+        return;
+    }
     int seqHash = create_fingerprint(sequence);
     int idx1 = hash1(seqHash) % 200;
     int idx2 = (idx1 ^ hash1(seqHash)) % 200;
