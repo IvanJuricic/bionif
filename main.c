@@ -24,7 +24,7 @@ char* append_string(char *s1, char *s2);
 unsigned int create_fingerprint(unsigned char *s);
 unsigned int hash1(unsigned int x);
 unsigned int KR_v2_hash(char *s);
-HashTableItem* create_hash_item(unsigned int key, unsigned int value);
+HashTableItem* create_hash_item(unsigned int key, unsigned char value);
 HashTable* create_hash_table(int size);
 void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence);
 void print_table(HashTable* table);
@@ -36,18 +36,20 @@ int check_dna_file(char *filename);
 int get_user_input();
 static char *rand_string(char *str, size_t size);
 void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* table2, char** sequences);
+void get_bytes(unsigned int val);
+int set_byte(unsigned int val, unsigned char byte);
 
 int num_of_collisions = 0;
 
 int main(int argc, char *argv[]) {
-
+/*
     if(argc != 2) {
         printf("\n\tUsage: ./a.out filename\n");
         exit(-1);
     }
 
-    char *filename = argv[argc-1];
-    //char *filename = "data";
+    char *filename = argv[argc-1];*/
+    char *filename = "data";
     srand(time(NULL));
     
     FILE *fp;
@@ -238,13 +240,56 @@ HashTable* create_hash_table(int size) {
 }
 
 // Create hash item from hashed sequence 
-HashTableItem* create_hash_item(unsigned int key, unsigned int value) {
+HashTableItem* create_hash_item(unsigned int key, unsigned char value) {
+    
+    unsigned int tmp, tmp2;
     HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
+    
+    tmp = item -> value;
+
+    printf("\nBytes ===> \n");
+    get_bytes(tmp);
+    tmp2 = set_byte(tmp, value);
+    get_bytes(tmp2);
+    printf("Return %d\n", tmp2);
     
     item -> key = key;
     item -> value = value; 
     
     return item;
+}
+
+int set_byte(unsigned int val, unsigned char byte) {
+    char tmp;
+    int x;
+    for(int i = 0; i < 4; i++) {
+        if(i = 0) tmp = (val >> 24);
+        else {
+            tmp = (val >> 8*(3-i)) & 0xff;
+        }
+        if(tmp == 0x00) {
+            x = ((val >> 8*(3-i)) & 0xff) | byte;
+            return x;
+        }   
+    }
+    return -1;
+}
+
+void get_bytes(unsigned int val) {
+    char *bytes;
+    bytes = malloc(4*sizeof(char));
+
+    bytes[0] = (val >> 24);
+    bytes[1] = (val >> 16) & 0xff;
+    bytes[2] = (val >> 8) & 0xff;
+    bytes[3] = val & 0xff;
+
+    for(int i = 0; i < 4; i++) {
+        printf("%02x ", bytes[i]);
+    }
+    printf("\n");
+
+    return;
 }
 
 // Search for item in hash table
