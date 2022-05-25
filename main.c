@@ -3,8 +3,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define BUFF_LEN 255
+#define HASH_TABLE_SIZE 150
 
 // Structs
 typedef struct {
@@ -21,6 +23,7 @@ typedef struct {
 char* append_string(char *s1, char *s2);
 unsigned int create_fingerprint(unsigned char *s);
 unsigned int hash1(unsigned int x);
+unsigned int KR_v2_hash(char *s);
 HashTableItem* create_hash_item(unsigned int key, unsigned int value);
 HashTable* create_hash_table(int size);
 void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence);
@@ -31,6 +34,10 @@ void search_for_item(HashTable* table1, HashTable* table2, char* sequence);
 void delete_item(HashTable* table1, HashTable* table2, char* sequence);
 int check_dna_file(char *filename);
 int get_user_input();
+static char *rand_string(char *str, size_t size);
+void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* table2, char** sequences);
+
+int num_of_collisions = 0;
 
 int main(int argc, char *argv[]) {
 
@@ -40,6 +47,8 @@ int main(int argc, char *argv[]) {
     }
 
     char *filename = argv[argc-1];
+    //char *filename = "data";
+    srand(time(NULL));
     
     FILE *fp;
     int counter = 0, seqHash, idx, num_entries, k;
@@ -49,14 +58,13 @@ int main(int argc, char *argv[]) {
     char *sequences[5];
 
     HashTable *hashTable1, *hashTable2;
-    hashTable1 = create_hash_table(200);
-    hashTable2 = create_hash_table(200);
+    hashTable1 = create_hash_table(HASH_TABLE_SIZE);
+    hashTable2 = create_hash_table(HASH_TABLE_SIZE);
 
     num_entries = check_dna_file(filename);
     fp = fopen(filename, "r");
     
     if(num_entries > 1) {
-        printf("\t%d entries found!\n", num_entries);
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
@@ -70,7 +78,7 @@ int main(int argc, char *argv[]) {
                 }
                 // Add sequence to cuckoo filter
                 insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
-                printf("Added sequence num: %d, seq len: %ld\n", counter, strlen(sequence));
+                //printf("Added sequence num: %d, seq len: %ld\n", counter, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
                 counter++;
@@ -88,13 +96,13 @@ int main(int argc, char *argv[]) {
         // Determine how large the user wants the k-mer
         printf("\tLong sequence detected\n");
         k = get_user_input();
-        /*
+        
         while(fgets(buff, k, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
                 continue;
             }
-            else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
+            else if(sequence != NULL && firstEntry == false && strlen(sequence) >= k) {
                 // Remember first 5 sequences for searching
                 if(counter < 5) {
                     sequences[counter] = malloc(strlen(sequence) + 1);
@@ -102,7 +110,7 @@ int main(int argc, char *argv[]) {
                 }
                 // Add sequence to cuckoo filter
                 insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
-                printf("Sequence %d => len: %ld\n", counter, strlen(sequence));
+                //printf("Sequence num %d => %s => len: %ld\n", counter, sequence, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
                 counter++;
@@ -115,24 +123,14 @@ int main(int argc, char *argv[]) {
                 tmp = append_string(sequence, buff);
                 sequence = tmp;
             }
-        }*/
+        }
     }
 
-    for(int i = 0; i < 5; i++) {
-        //printf("\n%s\n", sequences[i]);
-        search_for_item(hashTable1, hashTable2, sequences[i]);
-    }
-    delete_item(hashTable1, hashTable2, sequences[2]);
-    delete_item(hashTable1, hashTable2, sequences[4]);
-    for(int i = 0; i < 5; i++) {
-        //printf("\n%s\n", sequences[i]);
-        search_for_item(hashTable1, hashTable2, sequences[i]);
-    }
-    //print_table(hashTable);
-    //printf("Checking for entries....\n");
-    //search_for_item(hashTable1, hashTable2, entry);
-    //delete_item(hashTable1, hashTable2, entry);
-    //search_for_item(hashTable1, hashTable2, entry);
+    printf("\tAdded %d sequences!\n", counter);
+    printf("Num of collisions %d\n", num_of_collisions);
+
+    run_checks(num_entries, k, hashTable1, hashTable2, sequences);
+
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {
         if(sequences[i] != NULL) {
@@ -147,6 +145,26 @@ int main(int argc, char *argv[]) {
 
 }
 
+void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* table2, char** sequences) {
+    
+    if(num_sequences > 1) {
+        for(int i = 0; i < 5; i++) search_for_item(table1, table2, sequences[i]);
+
+        delete_item(table1, table2, sequences[2]);
+        delete_item(table1, table2, sequences[4]);
+
+        for(int i = 0; i < 5; i++) search_for_item(table1, table2, sequences[i]);
+    } else if(num_sequences == 1) {
+        char *str = malloc(seq_len*sizeof(char));
+        rand_string(str, seq_len);
+        printf("Generated sequence %s\n", str);
+        free(str);
+        str = NULL;
+    }
+    
+}
+
+// Get k-mer length
 int get_user_input() {
     int tmp;
     
@@ -200,8 +218,8 @@ int check_dna_file(char *filename) {
         if(buff[0] == '>') num_sequences++;
     }
 
-    printf("Check done!\n");
-
+    printf("Check done!\t%d entries found!\n", num_sequences);
+    
     return num_sequences;
 }
 
@@ -235,9 +253,11 @@ void search_for_item(HashTable* table1, HashTable* table2, char* sequence) {
         printf("Sequence invalid!\n");
         return;
     }
-    int seqHash = create_fingerprint(sequence);
-    int idx1 = hash1(seqHash) % 200;
-    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
+    int tmp = create_fingerprint(sequence);
+    // Get MSB
+    unsigned char seqHash = (tmp >> 24) & 0xff;
+    int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
+    int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
     // Check if element exists in first table
     if(table1 -> items[idx1] != NULL) {
@@ -261,9 +281,11 @@ void delete_item(HashTable* table1, HashTable* table2, char* sequence) {
         printf("Sequence invalid!\n");
         return;
     }
-    int seqHash = create_fingerprint(sequence);
-    int idx1 = hash1(seqHash) % 200;
-    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
+    int tmp = create_fingerprint(sequence);
+    // Get MSB
+    unsigned char seqHash = (tmp >> 24) & 0xff;
+    int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
+    int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
     if(table1 -> items[idx1] -> value == seqHash){
         table1 -> items[idx1] = NULL;
@@ -285,9 +307,13 @@ void delete_item(HashTable* table1, HashTable* table2, char* sequence) {
 
 // Add item to table
 void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence) {
-    int seqHash = create_fingerprint(sequence);
-    int idx1 = hash1(seqHash) % 200;
-    int idx2 = (idx1 ^ hash1(seqHash)) % 200;
+    int tmp = create_fingerprint(sequence);
+    // Get MSB
+    unsigned char seqHash = (tmp >> 24) & 0xff;
+    //printf("Sizeof int %ld\nSizeof hash %d\n", sizeof(int), seqHash);
+    //printf("seq hash to be stored => hex:%x, dec: %d\n", seqHash, seqHash);
+    int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
+    int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
     if (table1 -> items[idx1] == NULL) {
         // Key does not exist.
@@ -312,7 +338,24 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         // Insert directly
         table2 -> items[idx2] = item; 
         table2 -> count++;
-    } 
+    } else {
+        num_of_collisions++;
+    }
+}
+
+// Random sequence generator
+static char *rand_string(char *str, size_t size)
+{
+    const char charset[] = "ATCG";
+    if (size) {
+        //--size;
+        for (size_t n = 0; n <= size; n++) {
+            int key = rand() % (int) (sizeof charset - 1);
+            str[n] = charset[key];
+        }
+        str[size] = '\0';
+    }
+    return str;
 }
 
 // Free hash table item
@@ -351,6 +394,17 @@ unsigned int create_fingerprint(unsigned char *s) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
     return hash;
+}
+
+// Hash function for strings
+unsigned int KR_v2_hash(char *s)
+{
+    // Source: https://stackoverflow.com/a/45641002/5407270
+    //printf("Sequence %s\n", s);
+    unsigned int hashval = 0;
+    for (hashval = 0; *s != '\0'; s++)
+        hashval = *s + 31*hashval;
+    return hashval;
 }
 
 // Hash table 1 function
