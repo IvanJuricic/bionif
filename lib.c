@@ -215,7 +215,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     upperByte = (tmp >> 24) & 0xff;
     lowerByte = (tmp >> 16) & 0xff;
 
-    printf("Fingerprint    :%02lx\n", tmp);
+    printf("Fingerprint    :%02x\n", tmp);
     printf("Upper          :%02x\n", upperByte);
     printf("Lower          :%02x\n", lowerByte);
     /*
