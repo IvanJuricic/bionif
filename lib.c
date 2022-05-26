@@ -215,18 +215,41 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     upperByte = (tmp >> 24) & 0xff;
     lowerByte = (tmp >> 16) & 0xff;
 
-    printf("Fingerprint    :%02x\n", tmp);
-    printf("Upper          :%02x\n", upperByte);
-    printf("Lower          :%02x\n", lowerByte);
-    /*
     //printf("Sizeof int %ld\nSizeof hash %d\n", sizeof(int), seqHash);
     //printf("seq hash to be stored => hex:%x, dec: %d\n", seqHash, seqHash);
     int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
     int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
-    check_hash_table(table1, idx1, upperByte, lowerByte);
-    check_hash_table(table2, idx2, upperByte, lowerByte);
-    */
+    int ret = check_hash_table(table1, idx1);
+
+    unsigned long int prev_val, after_val;
+
+    if(ret == -1) {
+        
+        HashTableItem* item = create_hash_item_long_int(idx1);
+        
+        table1 -> items[idx1] = item;
+        table1 -> count++;
+        
+        prev_val = table1 -> items[idx1] -> value;
+
+        after_val = set_byte_long_int(prev_val, upperByte, lowerByte);
+        
+        if(after_val == -1) printf("Error inserting!\n");
+
+        table1 -> items[idx1] -> value = after_val;
+        return;
+
+    } else {
+        prev_val = table1 -> items[idx1] -> value;
+
+        after_val = set_byte_long_int(prev_val, upperByte, lowerByte);
+        
+        if(after_val == -1) printf("Error inserting!\n");
+
+        table1 -> items[idx1] -> value = after_val;
+    }
+    //check_hash_table(table2, idx2, upperByte, lowerByte);
     /*
     if (table1 -> items[idx1] == NULL) {
         // Key does not exist.
@@ -262,23 +285,15 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 
 
 // Check for space in hash table
-void check_hash_table(HashTable *hashTable, int key, unsigned char byteUpper, unsigned char byteLower) {
+int check_hash_table(HashTable *hashTable, int key) {
     unsigned long int tmp;
     int index;
     if( hashTable -> items[key] != NULL) {
         tmp = hashTable -> items[key] -> value;
         index = get_free_memory_index(tmp);
-        printf("Bajtovi u value => %02lx\n", tmp & 0xff);
-        get_bytes_long_int(tmp);
-        return;
-    }
-    printf("Nema zapisa!\n");
-    HashTableItem* item = create_hash_item_long_int(key, byteUpper, byteLower);
-    // Insert directly
-    hashTable -> items[key] = item; 
-    hashTable -> count++;
-    printf("Bajtovi u value => %02lx\n", item -> value);
-    
+        printf("Index di je slobodno: %d\n", index);
+        return index;
+    } else return -1;
 }
 
 // Random sequence generator
@@ -303,27 +318,61 @@ void free_item(HashTableItem* item) {
 
 // LONG INT IMPL
 // Create hash item from hashed sequence 
-HashTableItem* create_hash_item_long_int(unsigned int key, unsigned char byteUpper, unsigned char byteLower) {
+HashTableItem* create_hash_item_long_int(unsigned int key) {
     
     unsigned long int *value;
-    int ret_value;
+    unsigned long int ret_value;
     HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
     
+    item -> key = key;
+    item -> value = 0;
     //printf("Upper byte: %02x\nLower byte: %02x\n", byteUpper, byteLower);
     //get_bytes_long_int(value);
     
-    ret_value = set_byte_long_int(value, byteUpper, byteLower);
-    
-    item -> key = key;
-    item -> value = *value; 
+    //ret_value = set_byte_long_int(value, byteUpper, byteLower);
+    /*
+    if(ret_value == 1) {
+        item -> value = *value;
+    } else {
+        
+        printf("Error setting bytes!\n");
+        //item -> value = *value;
+    }*/
+     
     
     return item;
 }
 
-int set_byte_long_int(unsigned long int *val, unsigned char byteUpper, unsigned char byteLower) {
+unsigned long int set_byte_long_int(unsigned long int value, unsigned char byteUpper, unsigned char byteLower) {
+    unsigned long int val, helper;
+    unsigned short blank = 0x0000;
+
+    val = value;
+
+    int index = -1;
     for(int i = 0; i < 4; i++) {
-	unsigned long int tmp = (*val >> 16*(3-i)) & 0xffff;
-        printf("val: %02lx, tmp: %02lx\n", *val, tmp);
+        unsigned short tmp = (val >> 16*(3-i)) & 0xffff;
+        //printf("%d. two bytes: %x\n", i, tmp);
+        if(tmp == blank) index = i;
+    }
+
+    if(index != -1) {
+        helper = val;
+        helper >>= 16 * (3-index);
+        helper >>= 8;
+        helper |= byteUpper;
+        helper <<= 8;
+        helper |= byteLower;
+        helper <<= 16 * (3 - index);
+        val = helper;
+    }
+
+    return val;
+
+
+    /*
+    for(int i = 0; i < 4; i++) {
+	    unsigned long int tmp = (*val >> 16*(3-i)) & 0xffff;
         if(tmp == 0x00) {
             unsigned long int byteInt = byteUpper;
             byteInt <<= 8;
@@ -333,7 +382,7 @@ int set_byte_long_int(unsigned long int *val, unsigned char byteUpper, unsigned 
             return 1;
         }   
     }
-    return -1;
+    return -1;*/
 }
 
 void get_bytes_long_int(unsigned long int val) {
@@ -387,7 +436,7 @@ void print_table(HashTable* table) {
     printf("\nHash Table\n-------------------\n");
     for (int i=0; i<table->size; i++) {
         if (table->items[i]) {
-            printf("Index:%d, Key:%u, Value:%lu\n", i, table->items[i]->key, table->items[i]->value);
+            printf("Index:%d, Key:%u, Value:%lx\n", i, table->items[i]->key, table->items[i]->value);
         }
     }
     printf("-------------------\n\n");

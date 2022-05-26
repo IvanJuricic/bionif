@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
 
     run_checks(num_entries, k, hashTable1, hashTable2, sequences);
 
+    print_table(hashTable1);
+
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {
         if(sequences[i] != NULL) {

@@ -40,10 +40,10 @@ void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* ta
 void get_bytes(unsigned int val);
 int set_byte(unsigned int *val, unsigned char byte);
 int get_num_of_collisions();
-void check_hash_table(HashTable *hashTable, int key, unsigned char byteUpper, unsigned char byteLower);
+int check_hash_table(HashTable *hashTable, int key);
 
 // Long int
 int get_free_memory_index(unsigned long int value);
 void get_bytes_long_int(unsigned long int val);
-int set_byte_long_int(unsigned long int *val, unsigned char byteUpper, unsigned char byteLower);
-HashTableItem* create_hash_item_long_int(unsigned int key, unsigned char byteUpper, unsigned char byteLower);
+unsigned long int set_byte_long_int(unsigned long int value, unsigned char byteUpper, unsigned char byteLower);
+HashTableItem* create_hash_item_long_int(unsigned int key);
