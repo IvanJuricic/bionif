@@ -214,7 +214,11 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     unsigned char upperByte, lowerByte;
     upperByte = (tmp >> 24) & 0xff;
     lowerByte = (tmp >> 16) & 0xff;
-    
+
+    printf("Fingerprint    :%02lx\n", tmp);
+    printf("Upper          :%02x\n", upperByte);
+    printf("Lower          :%02x\n", lowerByte);
+    /*
     //printf("Sizeof int %ld\nSizeof hash %d\n", sizeof(int), seqHash);
     //printf("seq hash to be stored => hex:%x, dec: %d\n", seqHash, seqHash);
     int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
@@ -222,7 +226,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 
     check_hash_table(table1, idx1, upperByte, lowerByte);
     check_hash_table(table2, idx2, upperByte, lowerByte);
-
+    */
     /*
     if (table1 -> items[idx1] == NULL) {
         // Key does not exist.
