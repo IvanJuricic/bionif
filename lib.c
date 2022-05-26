@@ -233,21 +233,25 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         
         prev_val = table1 -> items[idx1] -> value;
 
-        after_val = set_byte_long_int(prev_val, upperByte, lowerByte);
+        after_val = set_byte_long_int(prev_val, upperByte, lowerByte, 0);
         
         if(after_val == -1) printf("Error inserting!\n");
 
         table1 -> items[idx1] -> value = after_val;
+
         return;
 
     } else {
+
         prev_val = table1 -> items[idx1] -> value;
 
-        after_val = set_byte_long_int(prev_val, upperByte, lowerByte);
+        after_val = set_byte_long_int(prev_val, upperByte, lowerByte, ret);
         
         if(after_val == -1) printf("Error inserting!\n");
 
         table1 -> items[idx1] -> value = after_val;
+
+        return;
     }
     //check_hash_table(table2, idx2, upperByte, lowerByte);
     /*
@@ -291,7 +295,6 @@ int check_hash_table(HashTable *hashTable, int key) {
     if( hashTable -> items[key] != NULL) {
         tmp = hashTable -> items[key] -> value;
         index = get_free_memory_index(tmp);
-        printf("Index di je slobodno: %d\n", index);
         return index;
     } else return -1;
 }
@@ -343,30 +346,27 @@ HashTableItem* create_hash_item_long_int(unsigned int key) {
     return item;
 }
 
-unsigned long int set_byte_long_int(unsigned long int value, unsigned char byteUpper, unsigned char byteLower) {
+unsigned long int set_byte_long_int(unsigned long int value, unsigned char byteUpper, unsigned char byteLower, int position) {
     unsigned long int val, helper;
     unsigned short blank = 0x0000;
 
     val = value;
 
-    int index = -1;
-    for(int i = 0; i < 4; i++) {
+    /*for(int i = 0; i < 4; i++) {
         unsigned short tmp = (val >> 16*(3-i)) & 0xffff;
         //printf("%d. two bytes: %x\n", i, tmp);
         if(tmp == blank) index = i;
-    }
+    }*/
 
-    if(index != -1) {
-        helper = val;
-        helper >>= 16 * (3-index);
-        helper >>= 8;
-        helper |= byteUpper;
-        helper <<= 8;
-        helper |= byteLower;
-        helper <<= 16 * (3 - index);
-        val = helper;
-    }
-
+    helper = val;
+    helper >>= 16 * (3 - position);
+    helper >>= 8;
+    helper |= byteUpper;
+    helper <<= 8;
+    helper |= byteLower;
+    helper <<= 16 * (3 - position);
+    val = helper;
+    
     return val;
 
 
@@ -399,22 +399,12 @@ void get_bytes_long_int(unsigned long int val) {
 }
 
 // LONG INT IMPL
-
 int get_free_memory_index(unsigned long int value) {
     //get_bytes_long_int(value);
-    unsigned short bytes[4];
+    unsigned short bytes;
     for(int i = 0; i < 4; i++) {
         unsigned short tmp = (value >> 16*(3-i)) & 0xffff;
-        //bytes[i][0] = (value >> 8*(7-i*2)) & 0xff;
-        //bytes[i][1] = (value >> 8*(6-i*2)) & 0xff;
-        /*if(bytes[i][0] == 0x00 && bytes[i][1] == 0x00) {
-            printf("Vracam %d\n", i);
-            return i;
-        }*/
-        bytes[i] = tmp;
-        printf("Bajtovi na mjestu %d: %x\n", i, bytes[i]);
-        if(bytes[i] == 0x00) return i;
-        
+        if(tmp == 0x0000) return i;
     }
     return -1;
 }
