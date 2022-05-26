@@ -11,8 +11,8 @@ void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* ta
     if(num_sequences > 1) {
         for(int i = 0; i < 5; i++) search_for_item(table1, table2, sequences[i]);
 
-        delete_item(table1, table2, sequences[2]);
-        delete_item(table1, table2, sequences[4]);
+        //delete_item(table1, table2, sequences[2]);
+        //delete_item(table1, table2, sequences[4]);
 
         for(int i = 0; i < 5; i++) search_for_item(table1, table2, sequences[i]);
     } else if(num_sequences == 1) {
@@ -106,9 +106,6 @@ HashTableItem* create_hash_item(unsigned int key, unsigned char value) {
     HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
     
     tmp = item -> value;
-
-    long int r;
-    printf("%ld\n", sizeof(r));
 
     printf("%02x\n", value);
     get_bytes(tmp);
@@ -223,6 +220,10 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
     int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
+    check_hash_table(table1, idx1, upperByte, lowerByte);
+    check_hash_table(table2, idx2, upperByte, lowerByte);
+
+    /*
     if (table1 -> items[idx1] == NULL) {
         // Key does not exist.
         if (table1 -> count == table1 -> size) {
@@ -247,8 +248,33 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         table2 -> items[idx2] = item; 
         table2 -> count++;
     } else {
+        //unsigned long int val = table1 -> items[idx1] -> value;
+        //int index = get_free_memory_index(val);
+        //printf("Index => %d\n", index);
+        //if()
         num_of_collisions++;
+    }*/
+}
+
+
+// Check for space in hash table
+void check_hash_table(HashTable *hashTable, int key, unsigned char byteUpper, unsigned char byteLower) {
+    unsigned long int tmp;
+    int index;
+    if( hashTable -> items[key] != NULL) {
+        tmp = hashTable -> items[key] -> value;
+        index = get_free_memory_index(tmp);
+        printf("Bajtovi u value => %02lx\n", tmp & 0xff);
+        get_bytes_long_int(tmp);
+        return;
     }
+    printf("Nema zapisa!\n");
+    HashTableItem* item = create_hash_item_long_int(key, byteUpper, byteLower);
+    // Insert directly
+    hashTable -> items[key] = item; 
+    hashTable -> count++;
+    printf("Bajtovi u value => %02lx\n", item -> value);
+    
 }
 
 // Random sequence generator
@@ -275,32 +301,30 @@ void free_item(HashTableItem* item) {
 // Create hash item from hashed sequence 
 HashTableItem* create_hash_item_long_int(unsigned int key, unsigned char byteUpper, unsigned char byteLower) {
     
-    unsigned long int value;
+    unsigned long int *value;
     int ret_value;
     HashTableItem *item = (HashTableItem *) malloc(sizeof(HashTableItem));
     
-    printf("Upper byte: %02x\nLower byte: %02x\n", byteUpper, byteLower);
-    get_bytes_long_int(value);
+    //printf("Upper byte: %02x\nLower byte: %02x\n", byteUpper, byteLower);
+    //get_bytes_long_int(value);
     
-    ret_value = set_byte_long_int(&value, byteUpper, byteLower);
-    
-    get_bytes_long_int(value);
-    
+    ret_value = set_byte_long_int(value, byteUpper, byteLower);
     
     item -> key = key;
-    item -> value = value; 
+    item -> value = *value; 
     
     return item;
 }
 
 int set_byte_long_int(unsigned long int *val, unsigned char byteUpper, unsigned char byteLower) {
     for(int i = 0; i < 4; i++) {
-	char tmp = (*val >> 16*(3-i)) & 0xffff;
+	unsigned long int tmp = (*val >> 16*(3-i)) & 0xffff;
+        printf("val: %02lx, tmp: %02lx\n", *val, tmp);
         if(tmp == 0x00) {
             unsigned long int byteInt = byteUpper;
             byteInt <<= 8;
             byteInt |= byteLower;
-            byteInt >>= 16*(3-i);
+            byteInt <<= 16*(3-i);
             *val = *val | byteInt;
             return 1;
         }   
@@ -313,7 +337,7 @@ void get_bytes_long_int(unsigned long int val) {
     
     for(int i = 0; i < 8; i++) bytes[i] = (val >> 8*(7-i)) & 0xff;
 	
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 8; i++) {
         printf("%x ", bytes[i] & 0xff);
     }
     printf("\n");
@@ -323,8 +347,24 @@ void get_bytes_long_int(unsigned long int val) {
 
 // LONG INT IMPL
 
-
-
+int get_free_memory_index(unsigned long int value) {
+    //get_bytes_long_int(value);
+    unsigned short bytes[4];
+    for(int i = 0; i < 4; i++) {
+        unsigned short tmp = (value >> 16*(3-i)) & 0xffff;
+        //bytes[i][0] = (value >> 8*(7-i*2)) & 0xff;
+        //bytes[i][1] = (value >> 8*(6-i*2)) & 0xff;
+        /*if(bytes[i][0] == 0x00 && bytes[i][1] == 0x00) {
+            printf("Vracam %d\n", i);
+            return i;
+        }*/
+        bytes[i] = tmp;
+        printf("Bajtovi na mjestu %d: %x\n", i, bytes[i]);
+        if(bytes[i] == 0x00) return i;
+        
+    }
+    return -1;
+}
 
 // Free hash table
 void free_table(HashTable* table) {
