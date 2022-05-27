@@ -240,7 +240,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         table1 -> items[idx1] -> value = after_val;
 
         printf(ANSI_COLOR_GREEN "Seq added at idx %d: %lx!\n", idx1, after_val);
-        //printf(ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_RESET);
 
         return;
 
@@ -255,6 +255,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         if(after_val == -1) printf("Error inserting!\n");
 
         printf(ANSI_COLOR_GREEN "Seq added at idx %d: %lx!\n", idx1, after_val);
+        printf(ANSI_COLOR_RESET);
 
         //printf("Updateano!\n");
         table1 -> items[idx1] -> value = after_val;
@@ -282,6 +283,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         table2 -> items[idx2] -> value = after_val;
 
         printf(ANSI_COLOR_CYAN "Seq added at idx %d: %lx!\n", idx2, after_val);
+        printf(ANSI_COLOR_RESET);
 
         //printf("Dodano tablica 2!\n");
         return;
@@ -299,6 +301,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         table2 -> items[idx2] -> value = after_val;
 
         printf(ANSI_COLOR_CYAN "Seq added at idx %d: %lx!\n", idx2, after_val);
+        printf(ANSI_COLOR_RESET);
 
         return;
     } else if(ret == -2) {
