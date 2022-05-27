@@ -220,19 +220,12 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
     int idx2 = (idx1 ^ hash1(seqHash)) % HASH_TABLE_SIZE;
 
-    int ret = check_hash_table(table1, idx1);
-
     unsigned long int prev_val, after_val;
+
+    int ret = check_hash_table(table1, idx1);
 
     // Check hash table one for available space
     if(ret == -1) {
-        printf("Tu prvo\n");
-        if (table1 -> count == table1 -> size) {
-            // Hash Table Full
-            printf("Insert Error: Hash Table is full\n");
-            //free_item(item);
-            return;
-        }
         HashTableItem* item = create_hash_item_long_int(table1, idx1);
         
         table1 -> items[idx1] = item;
@@ -246,37 +239,35 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 
         table1 -> items[idx1] -> value = after_val;
 
-        printf("Dodano!\n");
+        printf(ANSI_COLOR_GREEN "Seq added at idx %d: %lx!\n", idx1, after_val);
+        //printf(ANSI_COLOR_RESET);
 
         return;
 
-    } else if (ret != -1) {
+    } else if (ret > -1) {
 
         prev_val = table1 -> items[idx1] -> value;
+
+        if(check_for_duplicates(table1, idx1, upperByte, lowerByte)) return;
 
         after_val = set_byte_long_int(prev_val, upperByte, lowerByte, ret);
         
         if(after_val == -1) printf("Error inserting!\n");
 
-        printf("Updateano!\n");
+        printf(ANSI_COLOR_GREEN "Seq added at idx %d: %lx!\n", idx1, after_val);
+
+        //printf("Updateano!\n");
         table1 -> items[idx1] -> value = after_val;
 
         return;
+    } else if (ret == -2) {
+        printf("Table 1 full!\n");
     }
     
-    printf("\tNo space in table 1!!\n");
     ret = check_hash_table(table2, idx2);
 
     // Check hash table two for available space
     if(ret == -1) {
-        
-        if(table2 -> count == table2 -> size) {
-            // Hash Table Full
-            printf("Insert Error: Hash Table 2 is full\n");
-            //free_item(item);
-            return;
-        }
-
         HashTableItem* item = create_hash_item_long_int(table2, idx2);
         
         table2 -> items[idx2] = item;
@@ -290,20 +281,28 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 
         table2 -> items[idx2] -> value = after_val;
 
-        printf("Dodano tablica 2!\n");
+        printf(ANSI_COLOR_CYAN "Seq added at idx %d: %lx!\n", idx2, after_val);
+
+        //printf("Dodano tablica 2!\n");
         return;
 
-    } else if (ret != -1){
+    } else if (ret > -1){
 
         prev_val = table2 -> items[idx2] -> value;
+
+        if(check_for_duplicates(table2, idx2, upperByte, lowerByte)) return;
 
         after_val = set_byte_long_int(prev_val, upperByte, lowerByte, ret);
         
         if(after_val == -1) printf("Error inserting!\n");
 
         table2 -> items[idx2] -> value = after_val;
-        printf("Updateano tablica 2!\n");
+
+        printf(ANSI_COLOR_CYAN "Seq added at idx %d: %lx!\n", idx2, after_val);
+
         return;
+    } else if(ret == -2) {
+        printf("Table 2 full!\n");
     }
     
     /*
@@ -340,15 +339,44 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
 }
 
 
+bool check_for_duplicates(HashTable *hashTable, unsigned int key, unsigned char byteUpper, unsigned char byteLower) {
+    unsigned long int val = hashTable -> items[key] -> value;
+
+    unsigned short bytes = 0;
+
+    bytes >>= 8;
+    bytes |= byteUpper;
+    bytes <<= 8;
+    bytes |= byteLower;
+    
+    for(int i = 0; i < 4; i++) {
+        unsigned short tmp = (val >> 16*(3-i)) & 0xffff;
+        //printf("tmp: %02x, byte: %02x\n", tmp, bytes);
+        if(tmp == bytes) {
+            printf("Possible duplicate!\n");
+            return true;
+        }
+    }
+    return false;
+}
+
 // Check for space in hash table
 int check_hash_table(HashTable *hashTable, int key) {
     unsigned long int tmp;
     int index;
+
+    if(hashTable -> count == hashTable -> size) {
+        // Hash Table Full
+        printf("Insert Error: Hash Table is full\n");
+        //free_item(item);
+        return -2;
+    }
     
     if( hashTable -> items[key] != NULL) {
         tmp = hashTable -> items[key] -> value;
         index = get_free_memory_index(tmp);
         return index;
+
     } else return -1;
 }
 

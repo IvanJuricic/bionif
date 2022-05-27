@@ -92,7 +92,10 @@ int main(int argc, char *argv[]) {
 
     run_checks(num_entries, k, hashTable1, hashTable2, sequences);
 
+    printf("\tTABLICA 1\n");
     print_table(hashTable1);
+    printf("\tTABLICA 2\n");
+    print_table(hashTable2);
 
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {

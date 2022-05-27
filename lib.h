@@ -8,6 +8,14 @@
 #define BUFF_LEN 255
 #define HASH_TABLE_SIZE 80
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 // Structs
 typedef struct {
     unsigned int key;
@@ -40,6 +48,7 @@ void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* ta
 void get_bytes(unsigned int val);
 int set_byte(unsigned int *val, unsigned char byte);
 int get_num_of_collisions();
+bool check_for_duplicates(HashTable *hashTable, unsigned int key, unsigned char byteUpper, unsigned char byteLower);
 int check_hash_table(HashTable *hashTable, int key);
 
 // Long int
