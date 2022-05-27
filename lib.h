@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define BUFF_LEN 255
-#define HASH_TABLE_SIZE 160
+#define HASH_TABLE_SIZE 80
 
 // Structs
 typedef struct {
@@ -46,4 +46,4 @@ int check_hash_table(HashTable *hashTable, int key);
 int get_free_memory_index(unsigned long int value);
 void get_bytes_long_int(unsigned long int val);
 unsigned long int set_byte_long_int(unsigned long int value, unsigned char byteUpper, unsigned char byteLower, int position);
-HashTableItem* create_hash_item_long_int(unsigned int key);
+HashTableItem* create_hash_item_long_int(HashTable *hashTable, unsigned int key);
