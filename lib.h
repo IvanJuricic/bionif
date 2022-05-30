@@ -11,7 +11,8 @@
 // Structs
 typedef struct {
     unsigned int key;
-    unsigned long int value;
+    // Store 4 2-byte values from DNA hash fingerprints
+    unsigned short value[4];
 } HashTableItem;
 
 typedef struct {
