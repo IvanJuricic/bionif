@@ -188,18 +188,24 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
     else table_index = idx2;
     
     for(int i = 0; i < 400; i++) {
-        int index = rand() % 4;
-        HashTableItem *item = table -> items[table_index];
-        unsigned short prev_fingerprint = item -> value[index];
-        item -> value[index] = fingerprint;
+        int index = rand() % 3;
+        if(table -> items[table_index] != NULL) {
+            HashTableItem *item = table -> items[table_index];
+            unsigned short prev_fingerprint = item -> value[index];
+            item -> value[index] = fingerprint;
 
-        table_index ^= hash1(prev_fingerprint);
+            table_index ^= hash1(prev_fingerprint) % HASH_TABLE_SIZE;
 
-        for(int j = 0; j < 4; j++) {
-            if(table -> items[table_index] -> value[j] == 0) {
-                table -> items[table_index] -> value[j] = prev_fingerprint;
-                printf("Relocirano!\n");
-                return;
+            printf("novi index => %d\n", table_index);
+
+            if(table -> items[table_index] != NULL) {
+                for(int j = 0; j < 4; j++) {
+                    if(table -> items[table_index] -> value[j] == 0) {
+                        table -> items[table_index] -> value[j] = prev_fingerprint;
+                        printf("Relocirano!\n");
+                        return;
+                    }
+                }
             }
         }
 
