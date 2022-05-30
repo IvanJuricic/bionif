@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define BUFF_LEN 255
-#define HASH_TABLE_SIZE 80
+#define HASH_TABLE_SIZE 100
 
 // Structs
 typedef struct {
@@ -23,12 +23,12 @@ typedef struct {
 
 // Function declarations
 char* append_string(char *s1, char *s2);
-unsigned int create_fingerprint(unsigned char *s);
+unsigned int get_int_from_sequence(unsigned char *s);
 unsigned int hash1(unsigned int x);
 unsigned int KR_v2_hash(char *s);
 HashTableItem* create_hash_item(unsigned int key, unsigned char value);
 HashTable* create_hash_table(int size);
-void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence);
+void insert_sequence_hash_to_table(HashTable* table, char* sequence);
 void print_table(HashTable* table);
 void free_item(HashTableItem* item);
 void free_table(HashTable* table);

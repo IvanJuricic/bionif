@@ -18,9 +18,9 @@ int main(int argc, char *argv[]) {
 
     char *sequences[5];
 
-    HashTable *hashTable1, *hashTable2;
-    hashTable1 = create_hash_table(HASH_TABLE_SIZE);
-    hashTable2 = create_hash_table(HASH_TABLE_SIZE);
+    HashTable *hashTable, *hashTable2;
+    hashTable = create_hash_table(HASH_TABLE_SIZE);
+    //hashTable2 = create_hash_table(HASH_TABLE_SIZE);
 
     num_entries = check_dna_file(filename);
     fp = fopen(filename, "r");
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
                     strcpy(sequences[counter], sequence);
                 }
                 // Add sequence to cuckoo filter
-                insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
+                insert_sequence_hash_to_table(hashTable, sequence);
                 //printf("Added sequence num: %d, seq len: %ld\n", counter, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
                     strcpy(sequences[counter], sequence);
                 }
                 // Add sequence to cuckoo filter
-                insert_sequence_hash_to_table(hashTable1, hashTable2, sequence);
+                insert_sequence_hash_to_table(hashTable, sequence);
                 //printf("Sequence num %d => %s => len: %ld\n", counter, sequence, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
@@ -87,15 +87,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    printf("\tAdded %d sequences!\n", counter);
+    //printf("\tAdded %d sequences!\n", counter);
     printf("Num of collisions %d\n", get_num_of_collisions());
 
-    run_checks(num_entries, k, hashTable1, hashTable2, sequences);
+    //run_checks(num_entries, k, hashTable, hashTable2, sequences);
 
     printf("\tTABLICA 1\n");
-    print_table(hashTable1);
-    printf("\tTABLICA 2\n");
-    print_table(hashTable2);
+    print_table(hashTable);
 
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {

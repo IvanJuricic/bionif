@@ -85,28 +85,27 @@ int check_dna_file(char *filename) {
 }
 
 // Add item to table
-void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* sequence) {
-    int tmp = create_fingerprint(sequence);
-
-    int idx1 = KR_v2_hash(sequence) % HASH_TABLE_SIZE;
-    int idx2 = (idx1 ^ hash1(tmp)) % HASH_TABLE_SIZE;
+void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
+    unsigned int tmp  = get_int_from_sequence(sequence);
     
-    // Get last two MSB for sol using unsigned short
-    unsigned short bytes_to_store = (tmp >> 16) & 0xffff;
+    // Get last two MSB for fingerprint
+    unsigned short fingerprint = (tmp >> 16) & 0xffff;
 
-    // Try table 1
-    if( table1 -> items[idx1] != NULL) {
-        HashTableItem* item = table1 -> items[idx1];
+    unsigned int idx1 = hash1(tmp) % HASH_TABLE_SIZE;
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % HASH_TABLE_SIZE;
+
+    if( table -> items[idx1] != NULL) {
+        HashTableItem* item = table -> items[idx1];
         
         // Check for duplicates or direct insert
         for(int i = 0; i < 4; i++) {
-            if(item -> value[i] == bytes_to_store) {
+            if(item -> value[i] == fingerprint) {
                 printf("Duplikat!!\n");
                 num_of_collisions++;
                 sequences++;
                 return;
             } else if(item -> value[i] == 0) {
-                item -> value[i] = bytes_to_store;
+                item -> value[i] = fingerprint;
                 sequences++;
                 printf("Added seq %d!\n", sequences);
                 return;
@@ -116,7 +115,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     } else {
         // Check if hash table is full
         // If not, create new entry
-        if(table1 -> count == table1 -> size) {
+        if(table -> count == table -> size) {
             // Hash Table Full
             printf("Insert Error: Hash Table is full\n");
             //free_item(item);
@@ -125,11 +124,11 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         
         HashTableItem* item = (HashTableItem *) malloc(sizeof(HashTableItem));
         item -> key = idx1;
-        item -> value[0] = bytes_to_store;
+        item -> value[0] = fingerprint;
 
         // Store item to hash table
-        table1 -> items[idx1] = item;
-        table1 -> count++;
+        table -> items[idx1] = item;
+        table -> count++;
 
         sequences++;
         printf("Added seq %d!\n", sequences);
@@ -137,19 +136,18 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         return;
     }
 
-    printf("Table 1 full!!\n");
-
-    // Try table 2
-    if( table2 -> items[idx2] != NULL) {
-        HashTableItem* item = table1 -> items[idx2];
+    if( table -> items[idx2] != NULL) {
+        HashTableItem* item = table -> items[idx2];
         
         // Check for duplicates or direct insert
         for(int i = 0; i < 4; i++) {
-            if(item -> value[i] == bytes_to_store) {
+            if(item -> value[i] == fingerprint) {
                 printf("Duplikat!!\n");
+                num_of_collisions++;
+                sequences++;
                 return;
             } else if(item -> value[i] == 0) {
-                item -> value[i] = bytes_to_store;
+                item -> value[i] = fingerprint;
                 sequences++;
                 printf("Added seq %d!\n", sequences);
                 return;
@@ -159,7 +157,7 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
     } else {
         // Check if hash table is full
         // If not, create new entry
-        if(table2 -> count == table2 -> size) {
+        if(table -> count == table -> size) {
             // Hash Table Full
             printf("Insert Error: Hash Table is full\n");
             //free_item(item);
@@ -168,18 +166,48 @@ void insert_sequence_hash_to_table(HashTable* table1, HashTable* table2, char* s
         
         HashTableItem* item = (HashTableItem *) malloc(sizeof(HashTableItem));
         item -> key = idx2;
-        item -> value[0] = bytes_to_store;
+        item -> value[0] = fingerprint;
 
         // Store item to hash table
-        table2 -> items[idx2] = item;
-        table2 -> count++;
+        table -> items[idx2] = item;
+        table -> count++;
 
         sequences++;
         printf("Added seq %d!\n", sequences);
+
+        return;
+    }
+    
+    printf("Nema mjesta, relociranje....\n");
+    //sequences--;
+
+    // Get random index
+    unsigned int table_index;
+    int r = rand() % 2;
+    if (r == 0) table_index = idx1;
+    else table_index = idx2;
+    
+    for(int i = 0; i < 400; i++) {
+        int index = rand() % 4;
+        HashTableItem *item = table -> items[table_index];
+        unsigned short prev_fingerprint = item -> value[index];
+        item -> value[index] = fingerprint;
+
+        table_index ^= hash1(prev_fingerprint);
+
+        for(int j = 0; j < 4; j++) {
+            if(table -> items[table_index] -> value[j] == 0) {
+                table -> items[table_index] -> value[j] = prev_fingerprint;
+                printf("Relocirano!\n");
+                return;
+            }
+        }
+
     }
 
-    printf("Table 2 full!!\n");
-    
+    printf("Kurcina\n");
+   
+
     return;
 }
 
@@ -241,7 +269,7 @@ void print_table(HashTable* table) {
 }
 
 // Sequence fingerprint creation
-unsigned int create_fingerprint(unsigned char *s) {
+unsigned int get_int_from_sequence(unsigned char *s) {
     unsigned int hash = 5381, c;
 
     while (c = *s++)
