@@ -44,6 +44,7 @@ int get_num_of_collisions();
 bool check_for_duplicates(HashTable *hashTable, unsigned int key, unsigned char byteUpper, unsigned char byteLower);
 int check_hash_table(HashTable *hashTable, int key);
 bool find_sequence(HashTable *table, char *sequence);
+bool delete_sequence(HashTable *table, char *sequence);
 
 // Long int
 int get_free_memory_index(unsigned long int value);

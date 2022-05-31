@@ -12,10 +12,10 @@ void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequenc
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
         printf("\n");
 
-        //delete_item(table1, table2, sequences[2]);
-        //delete_item(table1, table2, sequences[4]);
+        delete_sequence(table, sequences[2]);
+        delete_sequence(table, sequences[4]);
 
-        //for(int i = 0; i < 5; i++) search_for_item(table1, table2, sequences[i]);
+        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
     } else if(num_sequences == 1) {
         char *str = malloc(seq_len*sizeof(char));
         rand_string(str, seq_len);
@@ -83,6 +83,39 @@ int check_dna_file(char *filename) {
     printf("Check done!\t%d entries found!\n", num_sequences);
     
     return num_sequences;
+}
+
+// Delete item
+bool delete_sequence(HashTable *table, char *sequence) {
+    unsigned int tmp  = get_int_from_sequence(sequence);
+    
+    // Get last two MSB for fingerprint
+    unsigned short fingerprint = (tmp >> 16) & 0xffff;
+
+    unsigned int idx1 = hash1(tmp) % HASH_TABLE_SIZE;
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % HASH_TABLE_SIZE;
+
+    if(table -> items[idx1] != NULL) {
+        for(int i = 0; i < 4; i++) {
+            if(table -> items[idx1] -> value[i] == fingerprint) {
+                table -> items[idx1] -> value[i] = 0;
+                printf("deleted seq %d\n", fingerprint);
+                return true;
+            }
+        }
+    }
+
+    if(table -> items[idx2] != NULL) {
+        for(int i = 0; i < 4; i++) {
+            if(table -> items[idx2] -> value[i] == fingerprint) {
+                table -> items[idx2] -> value[i] = 0;
+                printf("deleted seq %d\n", fingerprint);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 // Search for item
