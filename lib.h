@@ -37,12 +37,13 @@ void delete_item(HashTable* table1, HashTable* table2, char* sequence);
 int check_dna_file(char *filename);
 int get_user_input();
 static char *rand_string(char *str, size_t size);
-void run_checks(int num_sequences, int seq_len, HashTable* table1, HashTable* table2, char** sequences);
+void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequences);
 void get_bytes(unsigned int val);
 int set_byte(unsigned int *val, unsigned char byte);
 int get_num_of_collisions();
 bool check_for_duplicates(HashTable *hashTable, unsigned int key, unsigned char byteUpper, unsigned char byteLower);
 int check_hash_table(HashTable *hashTable, int key);
+bool find_sequence(HashTable *table, char *sequence);
 
 // Long int
 int get_free_memory_index(unsigned long int value);

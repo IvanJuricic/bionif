@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 
     printf("Free spaces %d\n", free_spaces);
 
-    //run_checks(num_entries, k, hashTable, hashTable2, sequences);
+    run_checks(num_entries, k, hashTable, sequences);
 
     printf("\tTABLICA 1\n");
     print_table(hashTable);
