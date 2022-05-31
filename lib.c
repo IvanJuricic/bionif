@@ -143,7 +143,6 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         for(int i = 0; i < 4; i++) {
             if(item -> value[i] == fingerprint) {
                 printf("Duplikat!!\n");
-                num_of_collisions++;
                 sequences++;
                 return;
             } else if(item -> value[i] == 0) {
@@ -197,6 +196,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
             table_index ^= hash1(prev_fingerprint) % HASH_TABLE_SIZE;
 
             printf("novi index => %d\n", table_index);
+            num_of_collisions++;
 
             if(table -> items[table_index] != NULL) {
                 for(int j = 0; j < 4; j++) {
@@ -268,7 +268,7 @@ void print_table(HashTable* table) {
     printf("\nHash Table\n-------------------\n");
     for (int i=0; i<table->size; i++) {
         if (table->items[i]) {
-            printf("Index:%d, Key:%u, Value:%lx\n", i, table->items[i]->key, table->items[i]->value);
+            printf("Index:%d, Key:%u, Value:%d %d %d %d\n", i, table->items[i]->key, table->items[i]->value[0], table->items[i]->value[1], table->items[i]->value[2], table->items[i]->value[3]);
         }
     }
     printf("-------------------\n\n");

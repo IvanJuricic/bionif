@@ -89,6 +89,16 @@ int main(int argc, char *argv[]) {
 
     //printf("\tAdded %d sequences!\n", counter);
     printf("Num of collisions %d\n", get_num_of_collisions());
+    int free_spaces = 0;
+    for(int i = 0; i < HASH_TABLE_SIZE; i++) {
+        for(int j = 0; j < 4; j++) {
+            if(hashTable -> items[i] != NULL) {
+                if(hashTable -> items[i] -> value[j] == 0) free_spaces++;
+            }
+        }
+    }
+
+    printf("Free spaces %d\n", free_spaces);
 
     //run_checks(num_entries, k, hashTable, hashTable2, sequences);
 
