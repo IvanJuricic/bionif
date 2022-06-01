@@ -18,7 +18,9 @@ int main(int argc, char *argv[]) {
 
     char *sequences[5];
 
-    FileDescriptor *fd = check_dna_file(filename);
+    FileDescriptor *fd = (FileDescriptor *)malloc(sizeof(FileDescriptor));
+    fd = check_dna_file(filename);
+    
     fp = fopen(filename, "r");
 
     num_of_items_to_be_stored = fd -> file_entries;
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]) {
     hashTable = create_hash_table(num_of_items_to_be_stored);
     //hashTable2 = create_hash_table(HASH_TABLE_SIZE);
     
-    if(num_entries > 1) {
+    if(fd -> file_type == 0) {
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
@@ -55,7 +57,7 @@ int main(int argc, char *argv[]) {
                 sequence = tmp;
             }
         }
-    } else if (num_entries == 1) {
+    } else if (fd -> file_type == 1) {
         while(fgets(buff, k, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
@@ -99,7 +101,7 @@ int main(int argc, char *argv[]) {
 
     printf("Free spaces %d\n", free_spaces);
 
-    run_checks(num_entries, k, hashTable, sequences);
+    run_checks(fd -> file_entries, k, hashTable, sequences);
 
     printf("\tTABLICA 1\n");
     print_table(hashTable);

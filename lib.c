@@ -106,14 +106,17 @@ FileDescriptor *check_dna_file(char *filename) {
         int k = get_user_input();
         num_sequences = 0;
         fd -> file_type = 1;
+        fp = fopen(filename, "r");
         while(fgets(buff, k, fp) != NULL) {
             if(buff[0] == '>') continue;
-            else if(buff != NULL && (strlen(buff) == k)) num_sequences++;
+            else if(buff != NULL) num_sequences++;
         }
         fd -> file_entries = num_sequences;
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);
+    
+    if(fp != NULL) fclose(fp);
     
     return fd;
 }
