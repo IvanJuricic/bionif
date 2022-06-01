@@ -33,7 +33,6 @@ int main(int argc, char *argv[]) {
             }
             else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
                 // Remember first 5 sequences for searching
-                printf("Tu smo\n");
                 if(counter < 5) {
                     sequences[counter] = malloc(strlen(sequence) + 1);
                     strcpy(sequences[counter], sequence);
@@ -90,6 +89,7 @@ int main(int argc, char *argv[]) {
 
     //printf("\tAdded %d sequences!\n", counter);
     printf("Num of collisions %d\n", get_num_of_collisions());
+    printf("Num of unsucessfull relocations: %d\n", get_num_of_unsuccessful_relocations());
     int free_spaces = 0;
     for(int i = 0; i < HASH_TABLE_SIZE; i++) {
         for(int j = 0; j < 4; j++) {

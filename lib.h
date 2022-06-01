@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define BUFF_LEN 255
-#define HASH_TABLE_SIZE 200
+#define HASH_TABLE_SIZE 80
 
 // Structs
 typedef struct {
@@ -45,6 +45,7 @@ bool check_for_duplicates(HashTable *hashTable, unsigned int key, unsigned char 
 int check_hash_table(HashTable *hashTable, int key);
 bool find_sequence(HashTable *table, char *sequence);
 bool delete_sequence(HashTable *table, char *sequence);
+int get_num_of_unsuccessful_relocations();
 
 // Long int
 int get_free_memory_index(unsigned long int value);

@@ -1,9 +1,13 @@
 #include "lib.h"
 
-int num_of_collisions = 0, sequences = 0, hash_table_size = 0;
+int num_of_collisions = 0, sequences = 0, hash_table_size = 0, unsuccessful_relocation = 0;
 
 int get_num_of_collisions() {
     return num_of_collisions; 
+}
+
+int get_num_of_unsuccessful_relocations() {
+    return unsuccessful_relocation; 
 }
 
 void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequences) {
@@ -18,8 +22,17 @@ void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequenc
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
     } else if(num_sequences == 1) {
         char *str = malloc(seq_len*sizeof(char));
-        rand_string(str, seq_len);
-        printf("Generated sequence %s\n", str);
+        int counter = 0;
+        printf("Looking for known sequences: \n");
+        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        for(int i = 0; i < 10000; i++) {
+            rand_string(str, seq_len);
+            if(find_sequence(table, str)) {
+                counter++;
+                printf("Found %d. sequence %s!\n", counter, str);    
+            }
+        }
+        
         free(str);
         str = NULL;
     }
@@ -203,6 +216,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         for(int i = 0; i < 4; i++) {
             if(item -> value[i] == fingerprint) {
                 printf("Duplikat!!\n");
+                num_of_collisions++;
                 sequences++;
                 return;
             } else if(item -> value[i] == 0) {
@@ -237,7 +251,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         return;
     }
     
-    printf("Nema mjesta, relociranje....\n");
+    //printf("Nema mjesta, relociranje....\n");
     //sequences--;
 
     // Get random index
@@ -255,14 +269,15 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
 
             table_index = (table_index ^ hash1(prev_fingerprint)) % HASH_TABLE_SIZE;
 
-            printf("novi index => %d\n", table_index);
+            //printf("novi index => %d\n", table_index);
             num_of_collisions++;
 
             if(table -> items[table_index] != NULL) {
                 for(int j = 0; j < 4; j++) {
                     if(table -> items[table_index] -> value[j] == 0) {
                         table -> items[table_index] -> value[j] = prev_fingerprint;
-                        printf("Relocirano!\n");
+                        sequences++;
+                        printf("Added seq %d!\n", sequences);
                         return;
                     }
                 }
@@ -271,7 +286,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
 
     }
 
-    printf("Kurcina\n");
+    unsuccessful_relocation++;
    
 
     return;
