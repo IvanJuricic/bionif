@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     
     FILE *fp;
-    int counter = 0, idx, num_entries, k, num_of_items_to_be_stored;
+    int counter = 0, idx, num_entries, k, num_of_items_to_be_stored, user_input;
     char buff[BUFF_LEN], *sequence, *tmp, *test;
     bool firstEntry = true;
 
@@ -24,6 +24,9 @@ int main(int argc, char *argv[]) {
     fp = fopen(filename, "r");
 
     num_of_items_to_be_stored = fd -> file_entries;
+    user_input = fd -> user_input;
+    
+    printf("User input %d\n", fd -> user_input);
 
     HashTable *hashTable;
     hashTable = create_hash_table(num_of_items_to_be_stored);
@@ -58,12 +61,12 @@ int main(int argc, char *argv[]) {
             }
         }
     } else if (fd -> file_type == 1) {
-        while(fgets(buff, k, (FILE *)fp) != NULL) {
+        while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
                 continue;
             }
-            else if(sequence != NULL && firstEntry == false && strlen(sequence) >= k) {
+            else if(sequence != NULL && firstEntry == false && strlen(sequence) >= user_input) {
                 // Remember first 5 sequences for searching
                 if(counter < 5) {
                     sequences[counter] = malloc(strlen(sequence) + 1);
@@ -101,10 +104,10 @@ int main(int argc, char *argv[]) {
 
     printf("Free spaces %d\n", free_spaces);
 
-    run_checks(fd -> file_entries, k, hashTable, sequences);
+    run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
 
     printf("\tTABLICA 1\n");
-    print_table(hashTable);
+    //print_table(hashTable);
 
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {

@@ -10,9 +10,9 @@ int get_num_of_unsuccessful_relocations() {
     return unsuccessful_relocation; 
 }
 
-void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequences) {
+void run_checks(int file_type, int seq_len, HashTable* table, char** sequences) {
     
-    if(num_sequences > 1) {
+    if(file_type == 0) {
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
         printf("\n");
 
@@ -20,18 +20,27 @@ void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequenc
         delete_sequence(table, sequences[4]);
 
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
-    } else if(num_sequences == 1) {
+    } else if(file_type == 1) {
         char *str = malloc(seq_len*sizeof(char));
         int counter = 0;
+        printf("User input *************************** =====>  %d\n", seq_len);
         printf("Looking for known sequences: \n");
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
-        for(int i = 0; i < 10000; i++) {
+        
+        delete_sequence(table, sequences[2]);
+        delete_sequence(table, sequences[4]);
+
+        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        
+        printf("Looking for random sequences....\n");
+        
+        for(int i = 0; i < 1000000; i++) {
             rand_string(str, seq_len);
             if(find_sequence(table, str)) {
                 counter++;
-                printf("Found %d. sequence %s!\n", counter, str);    
             }
         }
+        printf("Found %d. sequence!\n", counter);    
         
         free(str);
         str = NULL;
@@ -104,6 +113,7 @@ FileDescriptor *check_dna_file(char *filename) {
         // Determine how large the user wants the k-mer
         printf("\tLong sequence detected\n");
         int k = get_user_input();
+        fd -> user_input = k;
         num_sequences = 0;
         fd -> file_type = 1;
         fp = fopen(filename, "r");
@@ -111,7 +121,7 @@ FileDescriptor *check_dna_file(char *filename) {
             if(buff[0] == '>') continue;
             else if(buff != NULL) num_sequences++;
         }
-        fd -> file_entries = num_sequences;
+        fd -> file_entries = num_sequences / 4;
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);

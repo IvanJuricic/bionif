@@ -22,7 +22,7 @@ typedef struct {
 } HashTable;
 
 typedef struct {
-    int file_type, file_entries;
+    int file_type, file_entries, user_input;
 } FileDescriptor;
 
 // Function declarations
