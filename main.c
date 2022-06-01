@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
     char *sequences[5];
 
-    FileDescriptor *fd = (FileDescriptor *)malloc(sizeof(FileDescriptor));
+    FileDescriptor *fd;
     fd = check_dna_file(filename);
     
     fp = fopen(filename, "r");
@@ -26,11 +26,8 @@ int main(int argc, char *argv[]) {
     num_of_items_to_be_stored = fd -> file_entries;
     user_input = fd -> user_input;
     
-    printf("User input %d\n", fd -> user_input);
-
     HashTable *hashTable;
     hashTable = create_hash_table(num_of_items_to_be_stored);
-    //hashTable2 = create_hash_table(HASH_TABLE_SIZE);
     
     if(fd -> file_type == 0) {
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
@@ -107,7 +104,7 @@ int main(int argc, char *argv[]) {
     run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
 
     printf("\tTABLICA 1\n");
-    //print_table(hashTable);
+    print_table(hashTable);
 
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {

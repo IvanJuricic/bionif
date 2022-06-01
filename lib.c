@@ -21,18 +21,20 @@ void run_checks(int file_type, int seq_len, HashTable* table, char** sequences) 
 
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
     } else if(file_type == 1) {
+        
         char *str = malloc(seq_len*sizeof(char));
         int counter = 0;
-        printf("User input *************************** =====>  %d\n", seq_len);
-        printf("Looking for known sequences: \n");
+        
+        printf("\nLooking for known sequences: \n");
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        printf("\n");
         
         delete_sequence(table, sequences[2]);
         delete_sequence(table, sequences[4]);
 
         for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
         
-        printf("Looking for random sequences....\n");
+        printf("\nLooking for random sequences....\n");
         
         for(int i = 0; i < 1000000; i++) {
             rand_string(str, seq_len);
@@ -40,7 +42,7 @@ void run_checks(int file_type, int seq_len, HashTable* table, char** sequences) 
                 counter++;
             }
         }
-        printf("Found %d. sequence!\n", counter);    
+        printf("Found %d random sequences!\n", counter);    
         
         free(str);
         str = NULL;
@@ -93,12 +95,13 @@ int get_user_input() {
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
 FileDescriptor *check_dna_file(char *filename) {
     int num_sequences = 0;
-    char buff[BUFF_LEN];
-    FileDescriptor *fd;
+    
+    FileDescriptor *fd = (FileDescriptor *)malloc(sizeof(FileDescriptor));
 
     FILE *fp;
     fp = fopen(filename, "r");
     
+    char buff[BUFF_LEN];
     while(fgets(buff, BUFF_LEN, fp) != NULL) {
         if(buff[0] == '>') num_sequences++;
     }
@@ -107,16 +110,20 @@ FileDescriptor *check_dna_file(char *filename) {
     if(num_sequences > 1) {
         fd -> file_entries = num_sequences;
         fd ->file_type = 0;
+        fd -> user_input = -1;
     }
     // File with one long sequence
     else {
         // Determine how large the user wants the k-mer
         printf("\tLong sequence detected\n");
+        
         int k = get_user_input();
         fd -> user_input = k;
         num_sequences = 0;
         fd -> file_type = 1;
+        
         fp = fopen(filename, "r");
+
         while(fgets(buff, k, fp) != NULL) {
             if(buff[0] == '>') continue;
             else if(buff != NULL) num_sequences++;
@@ -213,7 +220,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
             } else if(item -> value[i] == 0) {
                 item -> value[i] = fingerprint;
                 sequences++;
-                printf("Added seq %d!\n", sequences);
+                //printf("Added seq %d!\n", sequences);
                 return;
             }
         }
@@ -237,7 +244,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         table -> count++;
 
         sequences++;
-        printf("Added seq %d!\n", sequences);
+        //printf("Added seq %d!\n", sequences);
 
         return;
     }
@@ -255,7 +262,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
             } else if(item -> value[i] == 0) {
                 item -> value[i] = fingerprint;
                 sequences++;
-                printf("Added seq %d!\n", sequences);
+                //printf("Added seq %d!\n", sequences);
                 return;
             }
         }
@@ -279,7 +286,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         table -> count++;
 
         sequences++;
-        printf("Added seq %d!\n", sequences);
+        //printf("Added seq %d!\n", sequences);
 
         return;
     }
@@ -310,7 +317,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
                     if(table -> items[table_index] -> value[j] == 0) {
                         table -> items[table_index] -> value[j] = prev_fingerprint;
                         sequences++;
-                        printf("Added seq %d!\n", sequences);
+                        //printf("Added seq %d!\n", sequences);
                         return;
                     }
                 }
