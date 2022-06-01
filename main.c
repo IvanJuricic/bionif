@@ -17,7 +17,9 @@ int main(int argc, char *argv[]) {
     bool firstEntry = true;
 
     char *sequences[5];
-
+    
+    double time_spent = 0.0;
+           
     FileDescriptor *fd;
     fd = check_dna_file(filename);
     
@@ -41,8 +43,16 @@ int main(int argc, char *argv[]) {
                     sequences[counter] = malloc(strlen(sequence) + 1);
                     strcpy(sequences[counter], sequence);
                 }
+                
                 // Add sequence to cuckoo filter
+                time_spent = 0;
+                clock_t begin = clock();
                 insert_sequence_hash_to_table(hashTable, sequence);
+                clock_t end = clock();
+                time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+                printf("The elapsed time for INSERT is %f seconds\n", time_spent);
+                
                 //printf("Added sequence num: %d, seq len: %ld\n", counter, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
@@ -70,7 +80,13 @@ int main(int argc, char *argv[]) {
                     strcpy(sequences[counter], sequence);
                 }
                 // Add sequence to cuckoo filter
+                time_spent = 0;
+                clock_t begin = clock();
                 insert_sequence_hash_to_table(hashTable, sequence);
+                clock_t end = clock();
+                time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+                printf("The elapsed time for INSERT is %f seconds\n", time_spent);
                 //printf("Sequence num %d => %s => len: %ld\n", counter, sequence, strlen(sequence));
                 free(sequence);
                 sequence = NULL;

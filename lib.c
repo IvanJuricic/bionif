@@ -13,26 +13,82 @@ int get_num_of_unsuccessful_relocations() {
 void run_checks(int file_type, int seq_len, HashTable* table, char** sequences) {
     
     if(file_type == 0) {
-        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        for(int i = 0; i < 5; i++) {
+           
+           double time_spent = 0.0;
+           
+	   clock_t begin = clock();
+           
+           printf("%d ", find_sequence(table, sequences[i]));
+           
+	   clock_t end = clock();
+	 
+	   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+           printf("The elapsed time is %f seconds\n", time_spent);
+          
+        }
         printf("\n");
 
         delete_sequence(table, sequences[2]);
         delete_sequence(table, sequences[4]);
 
-        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        for(int i = 0; i < 5; i++) {
+           
+           double time_spent = 0.0;
+           
+	   clock_t begin = clock();
+           
+           printf("%d ", find_sequence(table, sequences[i]));
+           
+	   clock_t end = clock();
+	 
+	   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+           printf("The elapsed time is %f seconds\n", time_spent);
+          
+        }
     } else if(file_type == 1) {
         
         char *str = malloc(seq_len*sizeof(char));
         int counter = 0;
         
         printf("\nLooking for known sequences: \n");
-        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        for(int i = 0; i < 5; i++) {
+           
+           double time_spent = 0.0;
+           
+	   clock_t begin = clock();
+           
+           printf("%d ", find_sequence(table, sequences[i]));
+           
+	   clock_t end = clock();
+	 
+	   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+           printf("The elapsed time is %f seconds\n", time_spent);
+          
+        }
         printf("\n");
         
         delete_sequence(table, sequences[2]);
         delete_sequence(table, sequences[4]);
 
-        for(int i = 0; i < 5; i++) printf("%d ", find_sequence(table, sequences[i]));
+        for(int i = 0; i < 5; i++) {
+           
+           double time_spent = 0.0;
+           
+	   clock_t begin = clock();
+           
+           printf("%d ", find_sequence(table, sequences[i]));
+           
+	   clock_t end = clock();
+	 
+	   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+           printf("The elapsed time is %f seconds\n", time_spent);
+          
+        }
         
         printf("\nLooking for random sequences....\n");
         
@@ -124,10 +180,11 @@ FileDescriptor *check_dna_file(char *filename) {
         
         fp = fopen(filename, "r");
 
-        while(fgets(buff, k, fp) != NULL) {
+        while(fgets(buff, k + 1, fp) != NULL) {
             if(buff[0] == '>') continue;
-            else if(buff != NULL) num_sequences++;
+            else if(strlen(buff) == k) num_sequences++;
         }
+        
         fd -> file_entries = num_sequences / 4;
     }
 
