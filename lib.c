@@ -82,9 +82,10 @@ int get_user_input() {
 }
 
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
-int check_dna_file(char *filename) {
+FileDescriptor *check_dna_file(char *filename) {
     int num_sequences = 0;
     char buff[BUFF_LEN];
+    FileDescriptor *fd;
 
     FILE *fp;
     fp = fopen(filename, "r");
@@ -93,9 +94,28 @@ int check_dna_file(char *filename) {
         if(buff[0] == '>') num_sequences++;
     }
 
+    // File with more short sequences
+    if(num_sequences > 1) {
+        fd -> file_entries = num_sequences;
+        fd ->file_type = 0;
+    }
+    // File with one long sequence
+    else {
+        // Determine how large the user wants the k-mer
+        printf("\tLong sequence detected\n");
+        int k = get_user_input();
+        num_sequences = 0;
+        fd -> file_type = 1;
+        while(fgets(buff, k, fp) != NULL) {
+            if(buff[0] == '>') continue;
+            else if(buff != NULL && (strlen(buff) == k)) num_sequences++;
+        }
+        fd -> file_entries = num_sequences;
+    }
+
     printf("Check done!\t%d entries found!\n", num_sequences);
     
-    return num_sequences;
+    return fd;
 }
 
 // Delete item
@@ -105,8 +125,8 @@ bool delete_sequence(HashTable *table, char *sequence) {
     // Get last two MSB for fingerprint
     unsigned short fingerprint = (tmp >> 16) & 0xffff;
 
-    unsigned int idx1 = hash1(tmp) % HASH_TABLE_SIZE;
-    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % HASH_TABLE_SIZE;
+    unsigned int idx1 = hash1(tmp) % table -> size;
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % table -> size;
 
     if(table -> items[idx1] != NULL) {
         for(int i = 0; i < 4; i++) {
@@ -138,8 +158,8 @@ bool find_sequence(HashTable *table, char *sequence) {
     // Get last two MSB for fingerprint
     unsigned short fingerprint = (tmp >> 16) & 0xffff;
 
-    unsigned int idx1 = hash1(tmp) % HASH_TABLE_SIZE;
-    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % HASH_TABLE_SIZE;
+    unsigned int idx1 = hash1(tmp) % table -> size;
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % table -> size;
 
     if(table -> items[idx1] != NULL) {
         for(int i = 0; i < 4; i++) {
@@ -164,8 +184,8 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
     // Get last two MSB for fingerprint
     unsigned short fingerprint = (tmp >> 16) & 0xffff;
 
-    unsigned int idx1 = hash1(tmp) % HASH_TABLE_SIZE;
-    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % HASH_TABLE_SIZE;
+    unsigned int idx1 = hash1(tmp) % table -> size;
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % table -> size;
 
     if( table -> items[idx1] != NULL) {
         HashTableItem* item = table -> items[idx1];
@@ -267,7 +287,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
             unsigned short prev_fingerprint = item -> value[index];
             item -> value[index] = fingerprint;
 
-            table_index = (table_index ^ hash1(prev_fingerprint)) % HASH_TABLE_SIZE;
+            table_index = (table_index ^ hash1(prev_fingerprint)) % table -> size;
 
             //printf("novi index => %d\n", table_index);
             num_of_collisions++;

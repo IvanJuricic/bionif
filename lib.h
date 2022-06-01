@@ -21,6 +21,10 @@ typedef struct {
     int count;
 } HashTable;
 
+typedef struct {
+    int file_type, file_entries;
+} FileDescriptor;
+
 // Function declarations
 char* append_string(char *s1, char *s2);
 unsigned int get_int_from_sequence(unsigned char *s);
@@ -34,7 +38,7 @@ void free_item(HashTableItem* item);
 void free_table(HashTable* table);
 void search_for_item(HashTable* table1, HashTable* table2, char* sequence);
 void delete_item(HashTable* table1, HashTable* table2, char* sequence);
-int check_dna_file(char *filename);
+FileDescriptor* check_dna_file(char *filename);
 int get_user_input();
 static char *rand_string(char *str, size_t size);
 void run_checks(int num_sequences, int seq_len, HashTable* table, char** sequences);

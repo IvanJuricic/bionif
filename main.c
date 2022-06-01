@@ -12,18 +12,20 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     
     FILE *fp;
-    int counter = 0, seqHash, idx, num_entries, k;
+    int counter = 0, idx, num_entries, k, num_of_items_to_be_stored;
     char buff[BUFF_LEN], *sequence, *tmp, *test;
     bool firstEntry = true;
 
     char *sequences[5];
 
-    HashTable *hashTable, *hashTable2;
-    hashTable = create_hash_table(HASH_TABLE_SIZE);
-    //hashTable2 = create_hash_table(HASH_TABLE_SIZE);
-
-    num_entries = check_dna_file(filename);
+    FileDescriptor *fd = check_dna_file(filename);
     fp = fopen(filename, "r");
+
+    num_of_items_to_be_stored = fd -> file_entries;
+
+    HashTable *hashTable;
+    hashTable = create_hash_table(num_of_items_to_be_stored);
+    //hashTable2 = create_hash_table(HASH_TABLE_SIZE);
     
     if(num_entries > 1) {
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
@@ -54,10 +56,6 @@ int main(int argc, char *argv[]) {
             }
         }
     } else if (num_entries == 1) {
-        // Determine how large the user wants the k-mer
-        printf("\tLong sequence detected\n");
-        k = get_user_input();
-        
         while(fgets(buff, k, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
