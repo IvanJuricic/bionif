@@ -1,14 +1,14 @@
 #include "lib.h"
 
 int main(int argc, char *argv[]) {
-/*
+
     if(argc != 2) {
-        printf("\n\tUsage: ./a.out filename\n");
+        printf("\n\tUsage: ./test.o filename\n");
         exit(-1);
     }
 
-    char *filename = argv[argc-1];*/
-    char *filename = "data";
+    char *filename = argv[argc-1];
+    //char *filename = "data";
     srand(time(NULL));
     
     FILE *fp;
@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
             }
             else if(sequence != NULL && buff[0] == '>' && firstEntry == false) {
                 // Remember first 5 sequences for searching
+                printf("Tu smo\n");
                 if(counter < 5) {
                     sequences[counter] = malloc(strlen(sequence) + 1);
                     strcpy(sequences[counter], sequence);

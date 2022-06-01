@@ -1,6 +1,6 @@
 #include "lib.h"
 
-int num_of_collisions = 0, sequences = 0;
+int num_of_collisions = 0, sequences = 0, hash_table_size = 0;
 
 int get_num_of_collisions() {
     return num_of_collisions; 
@@ -253,7 +253,7 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
             unsigned short prev_fingerprint = item -> value[index];
             item -> value[index] = fingerprint;
 
-            table_index ^= hash1(prev_fingerprint) % HASH_TABLE_SIZE;
+            table_index = (table_index ^ hash1(prev_fingerprint)) % HASH_TABLE_SIZE;
 
             printf("novi index => %d\n", table_index);
             num_of_collisions++;

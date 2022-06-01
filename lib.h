@@ -6,7 +6,7 @@
 #include <time.h>
 
 #define BUFF_LEN 255
-#define HASH_TABLE_SIZE 125
+#define HASH_TABLE_SIZE 200
 
 // Structs
 typedef struct {
