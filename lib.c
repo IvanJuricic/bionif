@@ -1,9 +1,17 @@
 #include "lib.h"
 
-int num_of_collisions = 0, sequences = 0, hash_table_size = 0, unsuccessful_relocation = 0;
+int num_of_collisions = 0, num_sequences = 0, hash_table_size = 0, unsuccessful_relocation = 0, num_of_duplicates = 0;
+
+int get_num_of_duplicates() {
+    return num_of_duplicates; 
+}
 
 int get_num_of_collisions() {
     return num_of_collisions; 
+}
+
+int get_num_sequences() {
+    return num_sequences;
 }
 
 int get_num_of_unsuccessful_relocations() {
@@ -150,7 +158,7 @@ int get_user_input() {
 
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
 FileDescriptor *check_dna_file(char *filename) {
-    int num_sequences = 0;
+    num_sequences = 0;
     
     FileDescriptor *fd = (FileDescriptor *)malloc(sizeof(FileDescriptor));
 
@@ -174,18 +182,19 @@ FileDescriptor *check_dna_file(char *filename) {
         printf("\tLong sequence detected\n");
         
         int k = get_user_input();
+        char tmp[k+1];
         fd -> user_input = k;
         num_sequences = 0;
         fd -> file_type = 1;
         
         fp = fopen(filename, "r");
 
-        while(fgets(buff, k + 1, fp) != NULL) {
-            if(buff[0] == '>') continue;
-            else if(strlen(buff) == k) num_sequences++;
+        while(fgets(tmp, k + 1, fp) != NULL) {
+            //printf("strlen tmp: %ld, user input: %d\n", strlen(tmp), k);
+            if(strlen(tmp) == k) num_sequences++;
         }
         
-        fd -> file_entries = num_sequences / 4;
+        fd -> file_entries = num_sequences / 5;
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);
@@ -270,13 +279,10 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         // Check for duplicates or direct insert
         for(int i = 0; i < 4; i++) {
             if(item -> value[i] == fingerprint) {
-                printf("Duplikat!!\n");
-                num_of_collisions++;
-                sequences++;
+                num_of_duplicates++;
                 return;
             } else if(item -> value[i] == 0) {
                 item -> value[i] = fingerprint;
-                sequences++;
                 //printf("Added seq %d!\n", sequences);
                 return;
             }
@@ -300,7 +306,6 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         table -> items[idx1] = item;
         table -> count++;
 
-        sequences++;
         //printf("Added seq %d!\n", sequences);
 
         return;
@@ -312,13 +317,10 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         // Check for duplicates or direct insert
         for(int i = 0; i < 4; i++) {
             if(item -> value[i] == fingerprint) {
-                printf("Duplikat!!\n");
-                num_of_collisions++;
-                sequences++;
+                num_of_duplicates++;
                 return;
             } else if(item -> value[i] == 0) {
                 item -> value[i] = fingerprint;
-                sequences++;
                 //printf("Added seq %d!\n", sequences);
                 return;
             }
@@ -342,7 +344,6 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
         table -> items[idx2] = item;
         table -> count++;
 
-        sequences++;
         //printf("Added seq %d!\n", sequences);
 
         return;
@@ -373,7 +374,6 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
                 for(int j = 0; j < 4; j++) {
                     if(table -> items[table_index] -> value[j] == 0) {
                         table -> items[table_index] -> value[j] = prev_fingerprint;
-                        sequences++;
                         //printf("Added seq %d!\n", sequences);
                         return;
                     }

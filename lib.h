@@ -50,6 +50,8 @@ int check_hash_table(HashTable *hashTable, int key);
 bool find_sequence(HashTable *table, char *sequence);
 bool delete_sequence(HashTable *table, char *sequence);
 int get_num_of_unsuccessful_relocations();
+int get_num_sequences();
+int get_num_of_duplicates();
 
 // Long int
 int get_free_memory_index(unsigned long int value);

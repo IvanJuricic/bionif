@@ -31,6 +31,9 @@ int main(int argc, char *argv[]) {
     HashTable *hashTable;
     hashTable = create_hash_table(num_of_items_to_be_stored);
     
+    time_spent = 0;
+    clock_t begin = clock();
+
     if(fd -> file_type == 0) {
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
@@ -68,26 +71,10 @@ int main(int argc, char *argv[]) {
             }
         }
     } else if (fd -> file_type == 1) {
-        while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
-            if(buff[0] == '>' && firstEntry == true) {
-                firstEntry = false;
-                continue;
-            }
-            else if(sequence != NULL && firstEntry == false && strlen(sequence) >= user_input) {
-                // Remember first 5 sequences for searching
-                if(counter < 5) {
-                    sequences[counter] = malloc(strlen(sequence) + 1);
-                    strcpy(sequences[counter], sequence);
-                }
+        while(fgets(buff, user_input + 1, (FILE *)fp) != NULL) {
+            if(sequence != NULL && strlen(sequence) == user_input) {
                 // Add sequence to cuckoo filter
-                time_spent = 0;
-                clock_t begin = clock();
                 insert_sequence_hash_to_table(hashTable, sequence);
-                clock_t end = clock();
-                time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
- 
-                printf("The elapsed time for INSERT is %f seconds\n", time_spent);
-                //printf("Sequence num %d => %s => len: %ld\n", counter, sequence, strlen(sequence));
                 free(sequence);
                 sequence = NULL;
                 counter++;
@@ -103,10 +90,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    //printf("\tAdded %d sequences!\n", counter);
-    printf("Num of collisions %d\n", get_num_of_collisions());
+    clock_t end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    printf("The elapsed time for INSERTING %d sequences is %f seconds\n", get_num_sequences(), time_spent);
+    printf("Num of duplicates %d\n", get_num_of_duplicates());
+    printf("Num of collisions: %d\n", get_num_of_collisions());
     printf("Num of unsucessfull relocations: %d\n", get_num_of_unsuccessful_relocations());
-    int free_spaces = 0;
+    /*int free_spaces = 0;
     for(int i = 0; i < HASH_TABLE_SIZE; i++) {
         for(int j = 0; j < 4; j++) {
             if(hashTable -> items[i] != NULL) {
@@ -115,12 +106,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    printf("Free spaces %d\n", free_spaces);
+    printf("Free spaces %d\n", free_spaces);*/
 
-    run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
+    //run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
 
     printf("\tTABLICA 1\n");
-    print_table(hashTable);
+    //print_table(hashTable);
 
     if(fp != NULL) fclose(fp);
     for(int i = 0; i < 5; i++) {
