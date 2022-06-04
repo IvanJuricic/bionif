@@ -157,7 +157,7 @@ int get_user_input() {
 }
 
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
-FileDescriptor *check_dna_file(char *filename) {
+FileDescriptor *check_dna_file(char *filename, int seq_len) {
     num_sequences = 0;
     
     FileDescriptor *fd = (FileDescriptor *)malloc(sizeof(FileDescriptor));
@@ -181,20 +181,19 @@ FileDescriptor *check_dna_file(char *filename) {
         // Determine how large the user wants the k-mer
         printf("\tLong sequence detected\n");
         
-        int k = get_user_input();
-        char tmp[k+1];
-        fd -> user_input = k;
+        char tmp[seq_len+1];
+        fd -> user_input = seq_len;
         num_sequences = 0;
         fd -> file_type = 1;
         
         fp = fopen(filename, "r");
 
-        while(fgets(tmp, k + 1, fp) != NULL) {
+        while(fgets(tmp, seq_len + 1, fp) != NULL) {
             //printf("strlen tmp: %ld, user input: %d\n", strlen(tmp), k);
-            if(strlen(tmp) == k) num_sequences++;
+            if(strlen(tmp) == seq_len) num_sequences++;
         }
         
-        fd -> file_entries = num_sequences / 5;
+        fd -> file_entries = num_sequences / 6;
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);
@@ -202,6 +201,54 @@ FileDescriptor *check_dna_file(char *filename) {
     if(fp != NULL) fclose(fp);
     
     return fd;
+}
+
+void check_false_positives(HashTable *table, int seq_len) {
+    FILE *fp;
+
+    int false_positives_counter = 0, counter = 0;
+
+    char *gen_filename_10 = "test_seq_10";
+    char *gen_filename_20 = "test_seq_20";
+    char *gen_filename_50 = "test_seq_50";
+    char *gen_filename_100 = "test_seq_100";
+    char *gen_filename_1000 = "test_seq_1000";
+
+    char *gen_filename;
+    if(seq_len == 10) {
+        gen_filename = gen_filename_10;
+    } else if(seq_len == 20) {
+        gen_filename = gen_filename_20;
+    } else if(seq_len == 50) {
+        gen_filename = gen_filename_50;
+    } else if(seq_len == 100) {
+        gen_filename = gen_filename_100;
+    } else if(seq_len == 1000) {
+        gen_filename = gen_filename_1000;
+    }
+
+    char buff[seq_len + 1];
+
+    for(int i = 0; i < 5; i++) {
+
+        printf("Running check %d!\n", i+1);
+        fp = fopen(gen_filename, "r");
+
+        while(fgets(buff, seq_len + 1, (FILE *)fp) != NULL) {
+            if(strlen(buff) == seq_len) {
+                //printf("strlen buff: %ld, buff size: %d\n", strlen(buff), BUFF_SIZE);
+                //fprintf(tmp, "%s\n", buff);
+                //counter++;
+                if(find_sequence(table, buff)) false_positives_counter++;
+            }
+        }
+
+    }
+
+    //printf("Total num of samples: %d\n", counter);
+    printf("Num of false positives: %d\n", false_positives_counter);
+
+    return;
 }
 
 // Delete item

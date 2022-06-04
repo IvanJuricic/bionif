@@ -21,7 +21,7 @@ static char *rand_string(char *str, size_t size)
 
 int main(int argc, char *argv[]) {
 
-    FILE *original, *generated_10, *generated_20, *generated_50, *generated_100, *generated_1000, *tmp;
+    FILE *original, *tmp;
 
     if(argc != 2) {
         printf("\n\tUsage: ./test.o filename\n");
@@ -30,7 +30,11 @@ int main(int argc, char *argv[]) {
 
     char *filename = argv[argc-1];
 
-    char *tmp_filename = "tmp";
+    char *seq_filename_10 = "seq_10";
+    char *seq_filename_20 = "seq_20";
+    char *seq_filename_50 = "seq_50";
+    char *seq_filename_100 = "seq_100";
+    char *seq_filename_1000 = "seq_1000";
 
     char *gen_filename_10 = "test_seq_10";
     char *gen_filename_20 = "test_seq_20";
@@ -40,35 +44,39 @@ int main(int argc, char *argv[]) {
 
     for(int j = 0; j < 5; j++) {
         
-        char *gen_file_name;
+        char *gen_file_name, *seq_file_name;
         FILE *gen_file;
 
         if(j == 0) {
             BUFF_SIZE = 10;
             gen_file_name = gen_filename_10;
+            seq_file_name = seq_filename_10;
         }
         else if(j == 1) {
             BUFF_SIZE = 20;
             gen_file_name = gen_filename_20;
+            seq_file_name = seq_filename_20;
         }
         else if(j == 2) {
             BUFF_SIZE = 50;
             gen_file_name = gen_filename_50;
+            seq_file_name = seq_filename_50;
         }
         else if(j == 3) {
-            printf("Tu smo\n");
             BUFF_SIZE = 100;
             gen_file_name = gen_filename_100;
+            seq_file_name = seq_filename_100;
         }
         else if(j == 4) {
             BUFF_SIZE = 1000;
             gen_file_name = gen_filename_1000;
+            seq_file_name = seq_filename_1000;
         }
 
         char buff[BUFF_SIZE + 1];
 
         original = fopen(filename, "r");
-        tmp = fopen(tmp_filename, "w+");
+        tmp = fopen(seq_file_name, "w+");
         gen_file = fopen(gen_file_name, "w+");
 
         while(fgets(buff, BUFF_SIZE + 1, (FILE *)original) != NULL) {
@@ -81,9 +89,9 @@ int main(int argc, char *argv[]) {
 
         char *rand_sequence = malloc(sizeof(char) * BUFF_SIZE);
 
-        for(int i = 0; i < 5000; i++) {
+        for(int i = 0; i < 50000; i++) {
             
-            tmp = fopen(tmp_filename, "r");
+            tmp = fopen(seq_file_name, "r");
             rand_string(rand_sequence, BUFF_SIZE);
             
             while(fgets(buff, BUFF_SIZE + 1, (FILE *)tmp) != NULL) {

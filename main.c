@@ -2,12 +2,13 @@
 
 int main(int argc, char *argv[]) {
 
-    if(argc != 2) {
-        printf("\n\tUsage: ./test.o filename\n");
+    if(argc != 3) {
+        printf("\n\tUsage: ./test.o filename sequence_length\n");
         exit(-1);
     }
 
-    char *filename = argv[argc-1];
+    char *filename = argv[argc-2];
+    int seq_len = atoi(argv[argc-1]);
     //char *filename = "data";
     srand(time(NULL));
     
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
     double time_spent = 0.0;
            
     FileDescriptor *fd;
-    fd = check_dna_file(filename);
+    fd = check_dna_file(filename, seq_len);
     
     fp = fopen(filename, "r");
 
@@ -110,16 +111,18 @@ int main(int argc, char *argv[]) {
 
     //run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
 
+    check_false_positives(hashTable, seq_len);
+
     printf("\tTABLICA 1\n");
     //print_table(hashTable);
 
-    if(fp != NULL) fclose(fp);
-    for(int i = 0; i < 5; i++) {
+    //if(fp != NULL) fclose(fp);
+    /*for(int i = 0; i < 5; i++) {
         if(sequences[i] != NULL) {
             free(sequences[i]);
             sequences[i] = NULL;
         }
-    }
+    }*/
 
     printf("Done!\n");
     
