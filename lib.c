@@ -1,6 +1,6 @@
 #include "lib.h"
 
-int num_of_collisions = 0, num_sequences = 0, hash_table_size = 0, unsuccessful_relocation = 0, num_of_duplicates = 0;
+int num_of_collisions = 0, num_sequences = 0, hash_table_size = 0, unsuccessful_relocation = 0, num_of_duplicates = 0, num_of_buckets = 5;
 
 int get_num_of_duplicates() {
     return num_of_duplicates; 
@@ -100,7 +100,7 @@ void run_checks(int file_type, int seq_len, HashTable* table, char** sequences) 
         
         printf("\nLooking for random sequences....\n");
         
-        for(int i = 0; i < 1000000; i++) {
+        for(int i = 0; i < 100000; i++) {
             rand_string(str, seq_len);
             if(find_sequence(table, str)) {
                 counter++;
@@ -157,21 +157,24 @@ int get_user_input() {
 }
 
 void get_table_statistics(HashTable *table) {
-    int free_spaces = 0;
+    int free_spaces = 0, occupied = 0;
 
     for(int i = 0; i < table -> size; i++) {
-        for(int j = 0; j < 4; j++) {
+        for(int j = 0; j < num_of_buckets; j++) {
             if(table -> items[i] != NULL) {
-                if(table -> items[i] -> value[j] == 0) free_spaces++;
+                if(table -> items[i] -> value[j] <= 0) free_spaces++;
+                else occupied++;
             }
         }
     }
 
-    printf("Total space available %d\n", (table -> size) * 5);
+    printf("Num of occupied spaces %d\n", occupied);
     printf("Num of free spaces %d\n", free_spaces);
     printf("Num of duplicates %d\n", get_num_of_duplicates());
     printf("Num of collisions: %d\n", get_num_of_collisions());
     printf("Num of unsucessfull relocations: %d\n", get_num_of_unsuccessful_relocations());
+    
+    //print_table(table);
 
 }
 
@@ -213,10 +216,11 @@ FileDescriptor *check_dna_file(char *filename, int seq_len) {
             if(strlen(tmp) == seq_len) num_sequences++;
         }
         
-        fd -> file_entries = num_sequences / 5;
+        fd -> file_entries = num_sequences / 3;
         free(tmp);
     }
 
+    //printf("Table size => %d\n", (fd -> file_entries) * 4);
     printf("Check done!\t%d entries found!\n", num_sequences);
     
     if(fp != NULL) fclose(fp);
@@ -237,6 +241,7 @@ void check_false_positives(HashTable *table, int seq_len) {
     char *gen_filename_10000 = "test_seq_10000";
 
     char *gen_filename;
+    
     if(seq_len == 10) {
         gen_filename = gen_filename_10;
     } else if(seq_len == 20) {
@@ -252,7 +257,6 @@ void check_false_positives(HashTable *table, int seq_len) {
     }
 
     char *buff = malloc(sizeof(char) * (seq_len + 1));
-
 
     printf("Running checks for false positives....!\n");
     fp = fopen(gen_filename, "r");
@@ -315,8 +319,8 @@ bool find_sequence(HashTable *table, char *sequence) {
     // Get last two MSB for fingerprint
     unsigned short fingerprint = (tmp >> 16) & 0xffff;
 
-    unsigned int idx1 = hash1(tmp) % table -> size;
-    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % table -> size;
+    unsigned int idx1 = hash1(tmp) % (table -> size);
+    unsigned int idx2 = (idx1 ^ hash1(fingerprint)) % (table -> size);
 
     if(table -> items[idx1] != NULL) {
         for(int i = 0; i < 4; i++) {
@@ -429,8 +433,8 @@ void insert_sequence_hash_to_table(HashTable* table, char* sequence) {
     if (r == 0) table_index = idx1;
     else table_index = idx2;
     
-    for(int i = 0; i < 400; i++) {
-        int index = rand() % 3;
+    for(int i = 0; i < 200; i++) {
+        int index = rand() % 4;
         if(table -> items[table_index] != NULL) {
             HashTableItem *item = table -> items[table_index];
             unsigned short prev_fingerprint = item -> value[index];

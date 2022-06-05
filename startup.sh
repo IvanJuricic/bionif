@@ -9,8 +9,13 @@ echo -n $(tr -d "\n" < "$output") > "$output"
 gcc -o test main.c lib.c
 gcc -o generate generator.c
 
-echo "Generating test files....."
-./generate $output
+if [ -s "test_seq_10" ]
+then
+    echo ""
+else
+    echo "Generating test files....."
+    ./generate $output
+fi
 
 for i in 10 20 50 100 1000 10000
 do
