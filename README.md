@@ -7,6 +7,7 @@ All the sequences of length k are stored in a Dynamic Cuckoo Filter.
 ## To test the project:
 1) Clone the project from the master branch
 2) Run the following command in the project root
-    bash startup.sh
+
+        bash startup.sh
 
 
