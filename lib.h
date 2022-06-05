@@ -53,6 +53,7 @@ int get_num_of_unsuccessful_relocations();
 int get_num_sequences();
 int get_num_of_duplicates();
 void check_false_positives(HashTable *table, int seq_len);
+void get_table_statistics(HashTable *table);
 
 // Long int
 int get_free_memory_index(unsigned long int value);

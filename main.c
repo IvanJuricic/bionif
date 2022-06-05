@@ -7,11 +7,13 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
+    //int seq_lengths = [10, 20, 50, 100, 1000, 10000];
+
     char *filename = argv[argc-2];
     int seq_len = atoi(argv[argc-1]);
     //char *filename = "data";
     srand(time(NULL));
-    
+
     FILE *fp;
     int counter = 0, idx, num_entries, k, num_of_items_to_be_stored, user_input;
     char buff[BUFF_LEN], *sequence, *tmp, *test;
@@ -95,34 +97,10 @@ int main(int argc, char *argv[]) {
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
 
     printf("The elapsed time for INSERTING %d sequences is %f seconds\n", get_num_sequences(), time_spent);
-    printf("Num of duplicates %d\n", get_num_of_duplicates());
-    printf("Num of collisions: %d\n", get_num_of_collisions());
-    printf("Num of unsucessfull relocations: %d\n", get_num_of_unsuccessful_relocations());
-    /*int free_spaces = 0;
-    for(int i = 0; i < HASH_TABLE_SIZE; i++) {
-        for(int j = 0; j < 4; j++) {
-            if(hashTable -> items[i] != NULL) {
-                if(hashTable -> items[i] -> value[j] == 0) free_spaces++;
-            }
-        }
-    }
 
-    printf("Free spaces %d\n", free_spaces);*/
-
-    //run_checks(fd -> file_type, fd -> user_input, hashTable, sequences);
+    get_table_statistics(hashTable);
 
     check_false_positives(hashTable, seq_len);
-
-    printf("\tTABLICA 1\n");
-    //print_table(hashTable);
-
-    //if(fp != NULL) fclose(fp);
-    /*for(int i = 0; i < 5; i++) {
-        if(sequences[i] != NULL) {
-            free(sequences[i]);
-            sequences[i] = NULL;
-        }
-    }*/
 
     printf("Done!\n");
     

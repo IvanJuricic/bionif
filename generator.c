@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
 
+    int seq_lengths[6] = { 10, 20, 50, 100, 1000, 10000 };
+
     char *filename = argv[argc-1];
 
     char *seq_filename_10 = "seq_10";
@@ -35,42 +37,45 @@ int main(int argc, char *argv[]) {
     char *seq_filename_50 = "seq_50";
     char *seq_filename_100 = "seq_100";
     char *seq_filename_1000 = "seq_1000";
+    char *seq_filename_10000 = "seq_10000";
 
     char *gen_filename_10 = "test_seq_10";
     char *gen_filename_20 = "test_seq_20";
     char *gen_filename_50 = "test_seq_50";
     char *gen_filename_100 = "test_seq_100";
     char *gen_filename_1000 = "test_seq_1000";
+    char *gen_filename_10000 = "test_seq_10000";
 
-    for(int j = 0; j < 5; j++) {
+    for(int j = 0; j < 6; j++) {
         
         char *gen_file_name, *seq_file_name;
         FILE *gen_file;
 
+        BUFF_SIZE = seq_lengths[j];
+
         if(j == 0) {
-            BUFF_SIZE = 10;
             gen_file_name = gen_filename_10;
             seq_file_name = seq_filename_10;
         }
         else if(j == 1) {
-            BUFF_SIZE = 20;
             gen_file_name = gen_filename_20;
             seq_file_name = seq_filename_20;
         }
         else if(j == 2) {
-            BUFF_SIZE = 50;
             gen_file_name = gen_filename_50;
             seq_file_name = seq_filename_50;
         }
         else if(j == 3) {
-            BUFF_SIZE = 100;
             gen_file_name = gen_filename_100;
             seq_file_name = seq_filename_100;
         }
         else if(j == 4) {
-            BUFF_SIZE = 1000;
             gen_file_name = gen_filename_1000;
             seq_file_name = seq_filename_1000;
+        }
+        else if(j == 5) {
+            gen_file_name = gen_filename_10000;
+            seq_file_name = seq_filename_10000;
         }
 
         char buff[BUFF_SIZE + 1];

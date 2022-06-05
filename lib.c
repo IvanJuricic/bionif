@@ -156,6 +156,25 @@ int get_user_input() {
 
 }
 
+void get_table_statistics(HashTable *table) {
+    int free_spaces = 0;
+
+    for(int i = 0; i < table -> size; i++) {
+        for(int j = 0; j < 4; j++) {
+            if(table -> items[i] != NULL) {
+                if(table -> items[i] -> value[j] == 0) free_spaces++;
+            }
+        }
+    }
+
+    printf("Total space available %d\n", (table -> size) * 5);
+    printf("Num of free spaces %d\n", free_spaces);
+    printf("Num of duplicates %d\n", get_num_of_duplicates());
+    printf("Num of collisions: %d\n", get_num_of_collisions());
+    printf("Num of unsucessfull relocations: %d\n", get_num_of_unsuccessful_relocations());
+
+}
+
 // Check if there is one long sequence (returns 1) or multiple (returns num of entries)
 FileDescriptor *check_dna_file(char *filename, int seq_len) {
     num_sequences = 0;
@@ -179,7 +198,7 @@ FileDescriptor *check_dna_file(char *filename, int seq_len) {
     // File with one long sequence
     else {
         // Determine how large the user wants the k-mer
-        printf("\tLong sequence detected\n");
+        printf("\tSequence length %d\n", seq_len);
         
         char tmp[seq_len+1];
         fd -> user_input = seq_len;
@@ -188,12 +207,12 @@ FileDescriptor *check_dna_file(char *filename, int seq_len) {
         
         fp = fopen(filename, "r");
 
-        while(fgets(tmp, seq_len + 1, fp) != NULL) {
-            //printf("strlen tmp: %ld, user input: %d\n", strlen(tmp), k);
+        while(fgets(tmp, seq_len + 1, (FILE *)fp) != NULL) {
+            //printf("strlen tmp: %ld, user input: %d\n", strlen(tmp), seq_len);
             if(strlen(tmp) == seq_len) num_sequences++;
         }
         
-        fd -> file_entries = num_sequences / 6;
+        fd -> file_entries = num_sequences / 5;
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);
@@ -213,6 +232,7 @@ void check_false_positives(HashTable *table, int seq_len) {
     char *gen_filename_50 = "test_seq_50";
     char *gen_filename_100 = "test_seq_100";
     char *gen_filename_1000 = "test_seq_1000";
+    char *gen_filename_10000 = "test_seq_10000";
 
     char *gen_filename;
     if(seq_len == 10) {
@@ -225,6 +245,8 @@ void check_false_positives(HashTable *table, int seq_len) {
         gen_filename = gen_filename_100;
     } else if(seq_len == 1000) {
         gen_filename = gen_filename_1000;
+    } else if(seq_len == 10000) {
+        gen_filename = gen_filename_10000;
     }
 
     char buff[seq_len + 1];
