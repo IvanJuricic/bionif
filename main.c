@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
     FILE *fp;
     int counter = 0, idx, num_entries, k, num_of_items_to_be_stored, user_input;
-    char buff[BUFF_LEN], *sequence, *tmp, *test;
+    char *sequence, *tmp, *test;
     bool firstEntry = true;
 
     char *sequences[5];
@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     clock_t begin = clock();
 
     if(fd -> file_type == 0) {
+        char buff[BUFF_LEN];
         while(fgets(buff, BUFF_LEN, (FILE *)fp) != NULL) {
             if(buff[0] == '>' && firstEntry == true) {
                 firstEntry = false;
@@ -74,6 +75,8 @@ int main(int argc, char *argv[]) {
             }
         }
     } else if (fd -> file_type == 1) {
+        //char *buff = malloc(sizeof(char) * (user_input + 1));
+        char buff[user_input + 1];
         while(fgets(buff, user_input + 1, (FILE *)fp) != NULL) {
             if(sequence != NULL && strlen(sequence) == user_input) {
                 // Add sequence to cuckoo filter
@@ -91,6 +94,8 @@ int main(int argc, char *argv[]) {
                 sequence = tmp;
             }
         }
+
+        //free(buff);
     }
 
     clock_t end = clock();
@@ -105,5 +110,4 @@ int main(int argc, char *argv[]) {
     printf("Done!\n");
     
     return 0;
-
 }

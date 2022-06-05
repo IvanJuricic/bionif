@@ -200,7 +200,8 @@ FileDescriptor *check_dna_file(char *filename, int seq_len) {
         // Determine how large the user wants the k-mer
         printf("\tSequence length %d\n", seq_len);
         
-        char tmp[seq_len+1];
+        //char tmp[seq_len+1];
+        char *tmp = malloc(sizeof(char) * (seq_len + 1));
         fd -> user_input = seq_len;
         num_sequences = 0;
         fd -> file_type = 1;
@@ -213,6 +214,7 @@ FileDescriptor *check_dna_file(char *filename, int seq_len) {
         }
         
         fd -> file_entries = num_sequences / 5;
+        free(tmp);
     }
 
     printf("Check done!\t%d entries found!\n", num_sequences);
@@ -249,23 +251,23 @@ void check_false_positives(HashTable *table, int seq_len) {
         gen_filename = gen_filename_10000;
     }
 
-    char buff[seq_len + 1];
+    char *buff = malloc(sizeof(char) * (seq_len + 1));
 
-    for(int i = 0; i < 5; i++) {
 
-        printf("Running check %d!\n", i+1);
-        fp = fopen(gen_filename, "r");
+    printf("Running checks for false positives....!\n");
+    fp = fopen(gen_filename, "r");
 
-        while(fgets(buff, seq_len + 1, (FILE *)fp) != NULL) {
-            if(strlen(buff) == seq_len) {
-                //printf("strlen buff: %ld, buff size: %d\n", strlen(buff), BUFF_SIZE);
-                //fprintf(tmp, "%s\n", buff);
-                //counter++;
-                if(find_sequence(table, buff)) false_positives_counter++;
-            }
+    while(fgets(buff, seq_len + 1, (FILE *)fp) != NULL) {
+        if(strlen(buff) == seq_len) {
+            //printf("strlen buff: %ld, buff size: %d\n", strlen(buff), BUFF_SIZE);
+            //fprintf(tmp, "%s\n", buff);
+            //counter++;
+            if(find_sequence(table, buff)) false_positives_counter++;
         }
-
     }
+
+
+    free(buff);
 
     //printf("Total num of samples: %d\n", counter);
     printf("Num of false positives: %d\n", false_positives_counter);
