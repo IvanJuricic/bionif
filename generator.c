@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
 
         char *rand_sequence = malloc(sizeof(char) * BUFF_SIZE);
 
-        for(int i = 0; i < 1000000; i++) {
+        for(int i = 0; i < 100000; i++) {
             
             tmp = fopen(seq_file_name, "r");
             rand_string(rand_sequence, BUFF_SIZE);
